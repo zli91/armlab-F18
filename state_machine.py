@@ -107,9 +107,7 @@ class StateMachine():
         self.status_message = "State: Record Waypoint"
         self.current_state = "recordWaypoint"
         self.next_state = "idle"
-        self.tp.go()
-        for i in range(len(self.tp.go()))
-            self.tp.set_wp()
+        self.tp.set_wp()
 
     def play(self):
         self.status_message = "State: Play"
