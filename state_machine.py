@@ -1,11 +1,8 @@
 import time
 import numpy as np
 from rexarm import Rexarm as rexarm
-<<<<<<< HEAD
 from trajectory_planner import TrajectoryPlanner as tp
-import csv
-=======
->>>>>>> c9443017febd24041004f2a39105cf4cb30bc95e
+
 
 """
 TODO: Add states and state functions to this class
