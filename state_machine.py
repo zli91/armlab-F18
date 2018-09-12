@@ -60,12 +60,14 @@ class StateMachine():
                 self.idle()
             if(self.next_state == "estop"):
                 self.estop()  
-<<<<<<< HEAD
 
-        # if(Self.current_state == "recordwaypoint"):
+        if(self.current_state == "recordWaypoint"):
+            if(self.next_state == "idle"):
+                self.idle()
 
-=======
->>>>>>> c9443017febd24041004f2a39105cf4cb30bc95e
+        if(self.current_state == "play"):
+            if(self.next_state == "idle"):
+                self.idle()
                 
                
 
@@ -103,7 +105,7 @@ class StateMachine():
             self.rexarm.set_positions(joints[i])
             self.rexarm.pause(2)
             
-<<<<<<< HEAD
+
     def recordWaypoint(self):
         self.status_message = "State: Record Waypoint"
         self.current_state = "recordWaypoint"
@@ -118,9 +120,6 @@ class StateMachine():
         self.next_state = "dile"
         self.tp.go()
         
-=======
-
->>>>>>> c9443017febd24041004f2a39105cf4cb30bc95e
         
     def calibrate(self):
         self.current_state = "calibrate"
