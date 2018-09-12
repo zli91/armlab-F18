@@ -43,6 +43,10 @@ class StateMachine():
                 self.calibrate()
             if(self.next_state == "execute"):
                 self.execute()
+            if(self.next_state == "recordWaypoint"):
+                self.recordWaypoint()
+            if(self.next_state == "play"):
+                self.play()
                 
         if(self.current_state == "estop"):
             self.next_state = "estop"
