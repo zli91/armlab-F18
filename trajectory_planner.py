@@ -27,6 +27,7 @@ class TrajectoryPlanner():
 
     def set_wp(self):
         wp.append(self.rexarm.get_positions())
+        print(wp[-1]);
 
     def go(self, max_speed = 2.5):
         self.rexarm.set_speeds(self, max_speed)
