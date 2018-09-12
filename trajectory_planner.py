@@ -1,5 +1,7 @@
 import numpy as np 
 import time
+from rexarm import Rexarm as rexarm
+import csv
 
 """
 TODO: build a trajectory generator and waypoint planner 
@@ -15,6 +17,7 @@ class TrajectoryPlanner():
         self.initial_wp = [0.0]*self.num_joints
         self.final_wp = [0.0]*self.num_joints 
         self.dt = 0.05 # command rate
+        self.wp = [];
     
     def set_initial_wp(self):
         pass
@@ -22,8 +25,19 @@ class TrajectoryPlanner():
     def set_final_wp(self, waypoint):
         pass
 
+    def set_wp(self):
+        wp.append(self.rexarm.get_positions())
+
     def go(self, max_speed = 2.5):
-        pass
+        self.rexarm.set_speeds(self, max_speed):
+        for i in range(len(wp)):
+            self.rexarm.set_positions(wp[i])
+        with open("data.csv", 'wb') as resultFile:
+            writeResult = csv.writer(resultFile, delimiter=',')
+            for i in range(len(wp)):
+                writeResult.writerow(wp[i])
+        del wp[:]
+
 
     def stop(self):
         pass
