@@ -116,7 +116,7 @@ class StateMachine():
     def play(self):
         self.status_message = "State: Play"
         self.current_state = "play"
-        self.next_state = "dile"
+        self.next_state = "idle"
         self.tp.go()
         
         
