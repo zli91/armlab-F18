@@ -1,5 +1,8 @@
 import time
 import numpy as np
+from rexarm import Rexarm as rexarm
+from trajectory_planner import TrajectoryPlanner as tp
+import csv
 
 """
 TODO: Add states and state functions to this class
@@ -38,6 +41,8 @@ class StateMachine():
                 self.estop()
             if(self.next_state == "calibrate"):
                 self.calibrate()
+            if(self.next_state == "execute"):
+                self.execute()
                 
         if(self.current_state == "estop"):
             self.next_state = "estop"
@@ -46,6 +51,16 @@ class StateMachine():
         if(self.current_state == "calibrate"):
             if(self.next_state == "idle"):
                 self.idle()
+
+        if(self.current_state == "execute"):
+            if(self.next_state == "idle"):
+                self.idle()
+            if(self.next_state == "estop"):
+                self.estop()  
+
+        # if(Self.current_state == "recordwaypoint"):
+
+                
                
 
     """Functions run for each state"""
@@ -67,6 +82,35 @@ class StateMachine():
         self.current_state = "estop"
         self.rexarm.disable_torque()
         self.rexarm.get_feedback()
+
+    def execute(self):
+        self.status_message = "State: Execute "
+        self.current_state = "execute"
+        self.next_state = "idle"      
+        joints = [[0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.8, 1.0, 1.0],
+                       [-1.0, -0.8, -1.0, -1.0],
+                       [-1.0, 0.8, 1.0, 1.0],
+                       [1.0, -0.8,-1.0,-1.0],
+                       [0.0, 0.0, 0.0, 0.0]]
+        for i in range(6):
+            self.rexarm.set_positions(joints[i])
+            self.rexarm.pause(2)
+            
+    def recordWaypoint(self):
+        self.status_message = "State: Record Waypoint"
+        self.current_state = "recordWaypoint"
+        self.next_state = "idle"
+        self.tp.go()
+        for i in range(len(self.tp.go()))
+            self.tp.set_wp()
+
+    def play(self):
+        self.status_message = "State: Play"
+        self.current_state = "play"
+        self.next_state = "dile"
+        self.tp.go()
+        
         
     def calibrate(self):
         self.current_state = "calibrate"
