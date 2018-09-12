@@ -29,7 +29,7 @@ class TrajectoryPlanner():
         wp.append(self.rexarm.get_positions())
 
     def go(self, max_speed = 2.5):
-        self.rexarm.set_speeds(self, max_speed):
+        self.rexarm.set_speeds(self, max_speed)
         for i in range(len(wp)):
             self.rexarm.set_positions(wp[i])
         with open("data.csv", 'wb') as resultFile:
