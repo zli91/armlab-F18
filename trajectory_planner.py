@@ -26,18 +26,18 @@ class TrajectoryPlanner():
         pass
 
     def set_wp(self):
-        wp.append(self.rexarm.get_positions())
-        print(wp[-1]);
+        self.wp.append(self.rexarm.get_positions())
+        print(self.wp[-1]);
 
     def go(self, max_speed = 2.5):
         self.rexarm.set_speeds(self, max_speed)
-        for i in range(len(wp)):
-            self.rexarm.set_positions(wp[i])
+        for i in range(len(self.wp)):
+            self.rexarm.set_positions(self.wp[i])
         with open("data.csv", 'wb') as resultFile:
             writeResult = csv.writer(resultFile, delimiter=',')
-            for i in range(len(wp)):
-                writeResult.writerow(wp[i])
-        del wp[:]
+            for i in range(len(self.wp)):
+                writeResult.writerow(self.wp[i])
+        del self.wp[:]
 
 
     def stop(self):
