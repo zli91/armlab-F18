@@ -115,6 +115,7 @@ class Gui(QMainWindow):
         TODO: NAME AND CONNECT BUTTONS AS NEEDED
         """
         self.ui.btn_estop.clicked.connect(self.estop)
+        self.ui.btn_exec.clicked.connect(partial(self.sm.set_next_state, "execute"))
         self.ui.btnUser1.setText("Calibrate")
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_next_state, "calibrate"))
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
