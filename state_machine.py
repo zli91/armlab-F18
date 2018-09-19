@@ -151,12 +151,15 @@ class StateMachine():
                     i = i + 1
                     self.kinect.new_click = False
         
+        world_coordinates = [[0,0], [0,603.25], [608, 603.25], [6.8,0], [304, 301.625]]
         print self.kinect.rgb_click_points
         print self.kinect.depth_click_points
         """TODO Perform camera calibration here"""
-        # calculate the affimne transformation from rgb to depth
+        # calculate the affine transformation from rgb to depth
         self.kinect.getAffineTransform(self.kinect.rgb_click_points, self.kinect.depth_click_points)
+        # calculate the affine transformation from rgb to world
+        convert_to_world = self.kinect.getAffineTransform(self.kinect.rgb_click_points, world_coordinates)
+
         matrix_in = self.kinect.loadCameraCalibration()
-        print matrix_in
         self.status_message = "Calibration - Completed Calibration"
         time.sleep(1)
