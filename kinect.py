@@ -9,6 +9,7 @@ class Kinect():
     def __init__(self):
         self.currentVideoFrame = np.array([])
         self.currentDepthFrame = np.array([])
+        self.convert_to_world = np.array([])
         if(freenect.sync_get_depth() == None):
             self.kinectConnected = False
         else:
@@ -117,21 +118,33 @@ class Kinect():
         b = []
         x = []
         for i in range(num):
-            A.append([[pts1[i][0], pts1[i][1], 1, 0, 0, 0], [0, 0, 0, pts1[i][0], pts1[i][1], 1]])
-            b.append([[pts2[i][1]], [pts2[i][2]]])
+            A.append([pts1[i][0], pts1[i][1], 1, 0, 0, 0])
+            A.append([0, 0, 0, pts1[i][0], pts1[i][1], 1])
+            b.append([pts2[i][0]])
+            b.append([pts2[i][1]])
         At = np.transpose(A)
-        x = pinv(At*A)*At*b
+        x = np.matmul(np.matmul((pinv(np.matmul(At, A))), At), b)
 
-        print cv2.getAffineTransform(pts1,pts2)
-        return cv2.getAffineTransform(pts1,pts2)
+        result = np.array([[x.item(0), x.item(1), x.item(2)], [x.item(3), x.item(4), x.item(5)]])
+        # print cv2.getAffineTransform(pts1,pts2)
+        # return cv2.getAffineTransform(pts1,pts2)
+        self.depth2rgb_affine = result
+        print result
+        return result
 
 
     def registerDepthFrame(self, frame):
         """
-        TODO:
         Using an Affine transformation, transform the depth frame to match the RGB frame
         """
-        pass
+        # np.clip(frame,0,2**10 - 1,frame)
+        # frame >>= 2
+        # frame = frame.astype(np.uint8)
+        (h, w) = frame.shape[:2]
+
+        return cv2.warpAffine(frame, self.depth2rgb_affine, (w, h))
+        
+        
 
     def loadCameraCalibration(self):
         """
