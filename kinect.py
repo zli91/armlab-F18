@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from numpy.linalg import pinv
 from PyQt4.QtGui import QImage
 import freenect
 
@@ -100,7 +101,7 @@ class Kinect():
         except:
             return None
 
-    def getAffineTransform(self, coord1, coord2):
+    def getAffineTransform(self, coord1, coord2, num):
         """
         Given 2 sets of corresponding coordinates, 
         find the affine matrix transform between them.
@@ -108,8 +109,18 @@ class Kinect():
         TODO: Rewrite this function to take in an arbitrary number of coordinates and 
         find the transform without using cv2 functions
         """
-        pts1 = coord1[0:3].astype(np.float32)
-        pts2 = coord2[0:3].astype(np.float32)
+        pts1 = coord1[0:num].astype(np.float32)
+        pts2 = coord2[0:num].astype(np.float32)
+        A = []
+        At = []
+        b = []
+        x = []
+        for i in range(num):
+            A.append([[pts1[i][0], pts1[i][1], 1, 0, 0, 0], [0, 0, 0, pts1[i][0], pts1[i][1], 1]])
+            b.append([[pts2[i][1]], [pts2[i][2]]])
+        At = np.transpose(A)
+        x = pinv(At*A)*At*b
+
         print cv2.getAffineTransform(pts1,pts2)
         return cv2.getAffineTransform(pts1,pts2)
 
