@@ -3,6 +3,7 @@ import numpy as np
 from numpy.linalg import pinv
 from PyQt4.QtGui import QImage
 import freenect
+import os
 
 class Kinect():
     def __init__(self):
@@ -134,10 +135,11 @@ class Kinect():
 
     def loadCameraCalibration(self):
         """
-        TODO:
         Load camera intrinsic matrix from file.
         """
-        pass
+        # get the intrinsic matrix from the file
+        matrix_in = np.genfromtxt(os.path.join(os.path.dirname(__file__), "util/intrinsic_matrix.csv"), delimiter=",")
+        return matrix_in
     
     def blockDetector(self):
         """
