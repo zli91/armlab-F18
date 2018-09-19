@@ -4,6 +4,7 @@ from rexarm import Rexarm as rexarm
 from trajectory_planner import TrajectoryPlanner as tp
 
 
+
 """
 TODO: Add states and state functions to this class
         to implement all of the required logic for the armlab
@@ -122,8 +123,9 @@ class StateMachine():
         
     def calibrate(self):
         self.current_state = "calibrate"
+        self.status_message = "State: calibratie"
         self.next_state = "idle"
-        self.tp.go(max_speed=2.0)
+        # self.tp.go(max_speed=2.0)
         location_strings = ["lower left corner of board",
                             "upper left corner of board",
                             "upper right corner of board",
@@ -148,11 +150,13 @@ class StateMachine():
                     self.kinect.depth_click_points[i] = self.kinect.last_click.copy()
                     i = i + 1
                     self.kinect.new_click = False
-   
+        
         print self.kinect.rgb_click_points
         print self.kinect.depth_click_points
-
         """TODO Perform camera calibration here"""
-
+        # calculate the affimne transformation from rgb to depth
+        self.kinect.getAffineTransform(self.kinect.rgb_click_points, self.kinect.depth_click_points)
+        matrix_in = self.kinect.loadCameraCalibration()
+        print matrix_in
         self.status_message = "Calibration - Completed Calibration"
         time.sleep(1)

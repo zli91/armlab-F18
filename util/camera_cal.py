@@ -24,6 +24,7 @@ USAGE
 import numpy as np
 import cv2
 import freenect
+import csv
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -97,6 +98,13 @@ if __name__ == '__main__':
     f.write("\r\ndistortion coefficients:\r\n")
     f.write(str( dist_coefs.ravel()))
     f.close()
+
+    # write the intrinsic matrix into a csv file
+    with open('intrinsic_matrix.csv', 'wb') as matrix_file:
+        writer = csv.writer(matrix_file, delimiter = ',')
+        for row in camera_matrix:
+            writer.writerow(row)
+
     
     
     # Use new calibration to undistort camera feed, exit on ESC
