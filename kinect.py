@@ -128,7 +128,7 @@ class Kinect():
         result = np.array([[x.item(0), x.item(1), x.item(2)], [x.item(3), x.item(4), x.item(5)]])
         # print cv2.getAffineTransform(pts1,pts2)
         # return cv2.getAffineTransform(pts1,pts2)
-        self.depth2rgb_affine = result
+        # self.depth2rgb_affine = result
         print result
         return result
 
@@ -140,10 +140,14 @@ class Kinect():
         # np.clip(frame,0,2**10 - 1,frame)
         # frame >>= 2
         # frame = frame.astype(np.uint8)
-        (h, w) = frame.shape[:2]
+        rows, cols = frame.shape[:2]
 
-        return cv2.warpAffine(frame, self.depth2rgb_affine, (w, h))
-        
+        # print rows, cols
+        dst = cv2.warpAffine(frame, self.depth2rgb_affine, (cols, rows))
+        # rows, cols = dst.shape[:2]
+        # print rows, cols
+        return dst
+
         
 
     def loadCameraCalibration(self):
