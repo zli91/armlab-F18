@@ -97,15 +97,13 @@ class StateMachine():
         self.status_message = "State: Execute "
         self.current_state = "execute"
         self.next_state = "idle"      
-        joints = [[0.0, 0.0, 0.0, 0.0],
-                       [1.0, 0.8, 1.0, 1.0],
-                       [-1.0, -0.8, -1.0, -1.0],
-                       [-1.0, 0.8, 1.0, 1.0],
-                       [1.0, -0.8,-1.0,-1.0],
-                       [0.0, 0.0, 0.0, 0.0]]
-        for i in range(6):
-            self.rexarm.set_positions(joints[i])
-            self.rexarm.pause(2)
+        self.tp.wp = [[0.0, 0.0, 0.0, 0.0],
+                       [1.0, 0.8, 1.0, 1.0]]
+                       # [-1.0, -0.8, -1.0, -1.0],
+                       # [-1.0, 0.8, 1.0, 1.0],
+                       # [1.0, -0.8,-1.0,-1.0],
+                       # [0.0, 0.0, 0.0, 0.0]]
+        self.tp.execute_without_path_smoothing()
             
 
     def recordWaypoint(self):
@@ -118,7 +116,7 @@ class StateMachine():
         self.status_message = "State: Play"
         self.current_state = "play"
         self.next_state = "idle"
-        self.tp.go()
+        self.tp.execute_plan()
         
         
     def calibrate(self):
