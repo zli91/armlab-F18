@@ -201,9 +201,9 @@ class Kinect():
         in the depth image
         """
         self.currentDepthFrame = freenect.sync_get_depth()[0]
-        np.clip(self.currentDepthFrame,0,2**10 - 1,depth_frame)
+        np.clip(self.currentDepthFrame,0,2**10 - 1,self.currentDepthFrame)
         self.currentDepthFrame >>= 2
-        self.currentDepthFrame = depth_frame.astype(np.uint8)
+        self.currentDepthFrame = self.currentDepthFrame.astype(np.uint8)
 
         depthImage = self.currentDepthFrame
         rgpImage = self.currentVideoFrame

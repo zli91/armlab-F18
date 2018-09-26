@@ -44,7 +44,6 @@ class TrajectoryPlanner():
         print("moving")
         vt = [0.00001,0.00001,0.000001,0.00001]
 
-        current_pos = [0.0, 0.0, 0.0, 0.0]
         num_intervals = int(self.T/0.05);
         if (num_intervals < 4):
             num_intervals = 4
@@ -56,43 +55,46 @@ class TrajectoryPlanner():
         for k in range(len(qt0)):
             vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*look_ahead/1000 + 3*coeffs[k][3]*look_ahead/1000*look_ahead/1000)
             # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
+        print vt
         self.rexarm.set_speeds(vt)
         # start moving
         self.rexarm.set_positions(final_wp)
         self.rexarm.pause(time_interval - look_ahead/1000)
 
-        resultFile = open("with_path_smoothing.csv","wb")
-        resultFileVel = open("vel_with_path_smoothing.csv","wb")
-        writeResult = csv.writer(resultFile, delimiter=',')
-        writeResultVel = csv.writer(resultFileVel, delimiter=',')
+        # resultFile = open("with_path_smoothing.csv","wb")
+        # resultFileVel = open("vel_with_path_smoothing.csv","wb")
+        # writeResult = csv.writer(resultFile, delimiter=',')
+        # writeResultVel = csv.writer(resultFileVel, delimiter=',')
         
         for j in range(num_intervals):
             # self.rexarm.set_positions(current_pos)
             # self.rexarm.pause(time_interval-0.01)
-            cur_time = 2*time_interval*(j+1)
+            cur_time = time_interval*(j+1)
             # temp = false;
             for k in range(len(qt0)):
                 vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3.3*coeffs[k][3]*cur_time*cur_time)
                 # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
+            print vt
             self.rexarm.set_speeds(vt)
             self.rexarm.pause(time_interval)
             # self.rexarm.set_positions(current_pos)
-            write_pos = self.rexarm.get_positions()[:]
-            write_pos.append(time.time()-time_begin)
-            writeResult.writerow(write_pos)
-            write_vel = self.rexarm.get_speeds()[:]
-            write_vel.append(vt[0])
-            write_vel.append(vt[1])
-            write_vel.append(vt[2])
-            write_vel.append(vt[3])
-            write_vel.append(time.time()-time_begin)
-            writeResultVel.writerow(write_vel)
+            # write_pos = 
+            print self.rexarm.get_positions()[:]
+            # write_pos.append(time.time()-time_begin)
+            # writeResult.writerow(write_pos)
+            # write_vel = self.rexarm.get_speeds()[:]
+            # write_vel.append(vt[0])
+            # write_vel.append(vt[1])
+            # write_vel.append(vt[2])
+            # write_vel.append(vt[3])
+            # write_vel.append(time.time()-time_begin)
+            # writeResultVel.writerow(write_vel)
             # TODO: try both time_interval - look_ahead/1000
             # and time_interval
             # self.rexarm.pause(time_interval-look_ahead/1000)
         # self.rexarm.pause(time_interval)
         # self.rexarm.set_positions(final_wp)
-        resultFile.close()
+        # resultFile.close()
 
 
     def stop(self):
@@ -164,14 +166,14 @@ class TrajectoryPlanner():
     def execute_without_path_smoothing(self):
         time_begin = float(time.time())
         interval_begin = time_begin
-        with open("execute_without_path_smoothing.csv", 'wb') as resultFile:
-            writeResult = csv.writer(resultFile, delimiter=',')
-            for i in range(len(self.wp)-1):
-                self.rexarm.set_positions(self.wp[i+1])
-                while (time.time() - time_begin < 2):
-                    if (time.time() - interval_begin >= 0.05):
-                        interval_begin = time.time()
-                        current_pos = self.rexarm.get_positions()
-                        writeResult.writerow(current_pos)
-                self.rexarm.pause(2)
+        # with open("execute_without_path_smoothing.csv", 'wb') as resultFile:
+        #     writeResult = csv.writer(resultFile, delimiter=',')
+        for i in range(len(self.wp)-1):
+            self.rexarm.set_positions(self.wp[i+1])
+                # while (time.time() - time_begin < 2):
+                #     if (time.time() - interval_begin >= 0.05):
+                #         interval_begin = time.time()
+                #         current_pos = self.rexarm.get_positions()
+                #         writeResult.writerow(current_pos)
+            self.rexarm.pause(2)
         # self.wp = [[0.0, 0.0, 0.0, 0.0]]
