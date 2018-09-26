@@ -20,8 +20,9 @@ class TrajectoryPlanner():
         self.dt = 0.05 # command rate
         self.wp = [[0.0, 0.0, 0.0, 0.0]];
         self.T = 0;
-        self.time_factor = 20 # determines the total time motor takes from one point to the other
-    
+        self.time_factor = 5 # determines the total time motor takes from one point to the other
+        self.look_ahead = self.time_factor # determines how much time to look ahead when planning
+
     def set_initial_wp(self):
         pass
 
@@ -33,52 +34,75 @@ class TrajectoryPlanner():
         self.wp.append(temp[:])
         print(self.wp);
 
-    def go(self, initial_wp, final_wp, max_speed = 2.5):
+    def go(self, initial_wp, final_wp, look_ahead, max_speed = 2.5):
         qt0 = self.initial_wp
         qtf = self.final_wp
         print ("calculating time needed")
         self.calc_time_from_waypoints(self.initial_wp, self.final_wp)
         print("calculating cubic spline")
-        cubic_coeffs = self.generate_cubic_spline(self.initial_wp, self.final_wp, self.T)
+        coeffs = self.generate_cubic_spline(self.initial_wp, self.final_wp, self.T)
         print("moving")
-        # initialize speed vector and pos_ition
-        vt = [0.00001, 0.000001, 0.000001, 0.000001]
-        self.rexarm.set_speeds(vt)
+        vt = [0.00001,0.00001,0.000001,0.00001]
+
         current_pos = [0.0, 0.0, 0.0, 0.0]
         num_intervals = int(self.T/0.05);
         if (num_intervals < 4):
             num_intervals = 4
         time_interval = self.T/num_intervals;
-        time_begin = float(time.time())
+        while (time_interval*1000 < look_ahead):
+            look_ahead /= 2;
+        time_begin = time.time();
+        # initialize speed vector and position
+        for k in range(len(qt0)):
+            vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*look_ahead/1000 + 3*coeffs[k][3]*look_ahead/1000*look_ahead/1000)
+            # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
+        self.rexarm.set_speeds(vt)
+        # start moving
         self.rexarm.set_positions(final_wp)
+        self.rexarm.pause(time_interval - look_ahead/1000)
 
-        # resultFile = open("with_path_smoothing","wb")
-        # writeResult = csv.writer(resultFile, delimiter=',')
-        for j in range(num_intervals-1):
+        resultFile = open("with_path_smoothing.csv","wb")
+        resultFileVel = open("vel_with_path_smoothing.csv","wb")
+        writeResult = csv.writer(resultFile, delimiter=',')
+        writeResultVel = csv.writer(resultFileVel, delimiter=',')
+        
+        for j in range(num_intervals):
             # self.rexarm.set_positions(current_pos)
             # self.rexarm.pause(time_interval-0.01)
-            cur_time = time_interval*(j+1)
+            cur_time = 2*time_interval*(j+1)
             # temp = false;
             for k in range(len(qt0)):
-                vt[k] = cubic_coeffs[k][1] + 2*cubic_coeffs[k][2]*cur_time + 3*cubic_coeffs[k][3]*cur_time*cur_time
-                # current_pos[k] = cubic_coeffs[k][0] + cubic_coeffs[k][1]*cur_time + cubic_coeffs[k][2]*cur_time*cur_time + cubic_coeffs[k][3]*cur_time*cur_time*cur_time
+                vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3.3*coeffs[k][3]*cur_time*cur_time)
+                # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
             self.rexarm.set_speeds(vt)
-            current_pos = self.rexarm.get_positions()
-            # writeResult.writerow(current_pos)
             self.rexarm.pause(time_interval)
-        self.rexarm.pause(time_interval)
+            # self.rexarm.set_positions(current_pos)
+            write_pos = self.rexarm.get_positions()[:]
+            write_pos.append(time.time()-time_begin)
+            writeResult.writerow(write_pos)
+            write_vel = self.rexarm.get_speeds()[:]
+            write_vel.append(vt[0])
+            write_vel.append(vt[1])
+            write_vel.append(vt[2])
+            write_vel.append(vt[3])
+            write_vel.append(time.time()-time_begin)
+            writeResultVel.writerow(write_vel)
+            # TODO: try both time_interval - look_ahead/1000
+            # and time_interval
+            # self.rexarm.pause(time_interval-look_ahead/1000)
+        # self.rexarm.pause(time_interval)
         # self.rexarm.set_positions(final_wp)
-        # resultFile.close()
+        resultFile.close()
 
 
     def stop(self):
         pass
 
     def calc_time_from_waypoints(self, initial_wp, final_wp, max_speed=2.5):
-        max_velocity = [6.17, 6.17, 6.17, 12.2595];
+        max_velocity = [5.75, 5.75, 5.75, 6.17];
         time = 0.0;
-        print "inital: ", self.initial_wp
-        print "final: ", self.final_wp
+        # print "inital: ", self.initial_wp
+        # print "final: ", self.final_wp
         for i in range(len(self.initial_wp)):
             qf = self.final_wp[i]
             q0 = self.initial_wp[i]
@@ -88,22 +112,37 @@ class TrajectoryPlanner():
 
     def generate_cubic_spline(self, initial_wp, final_wp, T):
         coeffs = [];
+        cubic_matrix = [[1,0,0,0],[0,1,0,0],[1,T,T*T,T*T*T], [0,1,2*T,3*T*T]]
         for i in range(len(initial_wp)):
             temp = [];
-            time = float(T)
-            temp.append(initial_wp[i])  # a0
-            temp.append(0)              # a1
+            # time = float(T)
+            conditions = [initial_wp[i], 0, final_wp[i], 0]
+            # temp.append(initial_wp[i])  # a0
+            # temp.append(0)              # a1
             # solve for a2 and a3
-            a = np.array([[time*time, time*time*time], [2*time, 3*time*time]])
-            b = np.array([final_wp[i] - initial_wp[i], 0])
-            x = np.linalg.solve(a,b)
-            temp.append(x[0])
-            temp.append(x[1])
+            # a = np.array([[time*time, time*time*time], [2*time, 3*time*time]])
+            # b = np.array([final_wp[i] - initial_wp[i], 0])
+            # x = np.linalg.solve(a,b)
+            temp = np.matmul(np.linalg.inv(cubic_matrix),conditions)
             # temp = [a0, a1, a2, a3]
             coeffs.append(temp[:])
         print coeffs
         return coeffs
 
+    # def generate_quintic_poly(self, initial_wp, final_wp, T):
+    #     quintic_array = np.array([[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,2,0,0,0],[1,T,T*T,T*T*T,T*T*T*T,T*T*T*T*T],
+    #         [0,1,2*T,3*T*T,4*T*T*T,5*T*T*T*T],[0,0,2,6*T,12*T*T,20*T*T*T]])
+
+    #     coeffs = [];
+    #     conditions = [0, 0, 0, ]
+    #     for i in range(len(initial_wp)):
+    #         temp = [];
+    #         time = float(T)
+    #         conditions = [initial_wp[i], 0, 0, final_wp[i], 0, 0]    # [q0 v0 a0 qf vf af]
+    #         coeffs.append(np.matmul(np.linalg.inv(quintic_array), conditions)
+    #         # temp = [a0, a1, a2, a3]
+    #     print coeffs
+    #     return coeffs 
 
     def execute_plan(self, look_ahead=8):
         # print([max_speed]*len(self.rexarm.joints))
@@ -113,7 +152,7 @@ class TrajectoryPlanner():
             for i in range(len(self.wp)-1):
                 self.initial_wp = self.wp[i];
                 self.final_wp = self.wp[i+1];
-                self.go(self.initial_wp, self.final_wp);
+                self.go(self.initial_wp, self.final_wp, 10);
 
             with open("data.csv", 'wb') as resultFile:
                 writeResult = csv.writer(resultFile, delimiter=',')
@@ -125,14 +164,14 @@ class TrajectoryPlanner():
     def execute_without_path_smoothing(self):
         time_begin = float(time.time())
         interval_begin = time_begin
-        # with open("execute_without_path_smoothing.csv", 'wb') as resultFile:
-        #     writeResult = csv.writer(resultFile, delimiter=',')
-        for i in range(len(self.wp)):
-            self.rexarm.set_positions(self.wp[i])
-                # while (time.time() - time_begin < 2):
-                #     if (time.time() - interval_begin >= 0.05):
-                #         interval_begin = time.time()
-                #         current_pos = self.rexarm.get_positions()
-                #         writeResult.writerow(current_pos)
-            self.rexarm.pause(2)
-        self.wp = [[0.0, 0.0, 0.0, 0.0]]
+        with open("execute_without_path_smoothing.csv", 'wb') as resultFile:
+            writeResult = csv.writer(resultFile, delimiter=',')
+            for i in range(len(self.wp)-1):
+                self.rexarm.set_positions(self.wp[i+1])
+                while (time.time() - time_begin < 2):
+                    if (time.time() - interval_begin >= 0.05):
+                        interval_begin = time.time()
+                        current_pos = self.rexarm.get_positions()
+                        writeResult.writerow(current_pos)
+                self.rexarm.pause(2)
+        # self.wp = [[0.0, 0.0, 0.0, 0.0]]

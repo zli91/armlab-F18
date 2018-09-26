@@ -128,6 +128,7 @@ class Rexarm():
     def get_speeds(self):
         for i,joint in enumerate(self.joints):
             self.speed_fb[i] = joint.get_speed()
+        # print self.speed_fb
         return self.speed_fb
 
     def get_loads(self):

@@ -44,7 +44,7 @@ class DXL_MX:
         self.port = port
         self.id = id
         self.mode = self.get_mode()
-        self.max_speed = 12.2595 #rad/s
+        self.max_speed = 5.75 #rad/s
 
     def set_mode(self,mode):
         # 1 for wheel, 2 for joint
