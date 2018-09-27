@@ -4,6 +4,7 @@ from numpy.linalg import pinv
 from PyQt4.QtGui import QImage
 import freenect
 import os
+import argparse
 
 class Kinect():
     def __init__(self):
@@ -165,7 +166,33 @@ class Kinect():
         You will need to locate
         blocks in 3D space
         """
-        pass
+
+        cubeColor = ['yellow','orange','pink','black','red','purple','green','blue']
+        rgbBoundaries = [ # b,g,r
+            ([4, 160, 240], [50, 210, 253]), # yellow
+            ([10, 85, 195], [30, 130, 205]), # orange
+            ([85, 48, 189], [110, 60, 210]), # pink
+            ([10, 21, 21], [50, 30, 38]), # black
+            ([26, 22, 140], [60, 38, 160]), # red
+            ([110, 65, 120], [127, 86, 140]), # purple
+            ([94, 120, 87],[108, 130, 105]), # green
+            ([130, 95, 80], [158, 99, 85]) # blue
+            ]
+        ### color detection in rgb image
+        r = rgpImage[centerY][centerX][2]
+        g = rgpImage[centerY][centerX][1]
+        b = rgpImage[centerY][centerX][0]
+        print b,g,r
+        h = hsvImage[centerY][centerX][0]
+        s = hsvImage[centerY][centerX][1]
+        v = hsvImage[centerY][centerX][2]
+        for j in range(len(rgbBoundaries)):
+            (lower,upper) = rgbBoundaries[j]
+            if (b,g,r) >= lower and (b,g,r) <= upper:
+                print cubeColor[j]
+            else:
+                continue
+
 
     def detectBlocksInDepthImage(self):
         """
@@ -173,4 +200,40 @@ class Kinect():
         Implement a blob detector to find blocks
         in the depth image
         """
-        pass
+        self.currentDepthFrame = freenect.sync_get_depth()[0]
+        np.clip(self.currentDepthFrame,0,2**10 - 1,depth_frame)
+        self.currentDepthFrame >>= 2
+        self.currentDepthFrame = depth_frame.astype(np.uint8)
+
+        depthImage = self.currentDepthFrame
+        rgpImage = self.currentVideoFrame
+        hsvImage = cv2.cvtColor(rgpImage, cv2.COLOR_BGR2HSV)
+
+        (grayLower,grayUpper) = (0, 177)
+        grayLower = np.array(grayLower,dtype = "uint8")
+        grayUpper = np.array(grayUpper,dtype = "uint8")
+        grayThreshold = cv2.inRange(depthImage,grayLower,grayUpper)
+        
+        # Morpholigical Operations
+        kernel = np.ones((5,5),np.uint8)
+        grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
+        # find countors
+        _, cubeContours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+        for i in range(len(cubeContours)):
+            # draw contours
+            cv2.drawContours(rgpImage,[cubeContours[i]],-1,(0,255,0),3)
+            # visualization
+            cv2.namedWindow("window",cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('window', rgpImage)
+            cv2.waitKey(0)
+            # find moment
+            cubeMoment = cv2.moments(cubeContours[i])
+            centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
+            centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
+        return centerX,centerY
+
+
+
+        
+

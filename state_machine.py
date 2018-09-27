@@ -2,6 +2,7 @@ import time
 import numpy as np
 from rexarm import Rexarm as rexarm
 from trajectory_planner import TrajectoryPlanner as tp
+from kinect import Kinect as kn
 
 
 
@@ -48,6 +49,8 @@ class StateMachine():
                 self.recordWaypoint()
             if(self.next_state == "play"):
                 self.play()
+            if(self.next_state == "blockDetection")
+                self.blockDetection()
                 
         if(self.current_state == "estop"):
             self.next_state = "estop"
@@ -70,6 +73,11 @@ class StateMachine():
         if(self.current_state == "play"):
             if(self.next_state == "idle"):
                 self.idle()
+
+        if(self.current_state == "blockDetection")
+            if(self.next_state == "idle"):
+                self.idle()
+
                 
                
 
@@ -165,3 +173,10 @@ class StateMachine():
         self.kinect.kinectCalibrated = True
         self.status_message = "Calibration - Completed Calibration"
         time.sleep(1)
+
+    def blockDetection(self):
+        self.current_state = "blockDetection"
+        self.status_message = "State: Block Detection"
+        self.next_state = "idle"
+        self.kn.detectBlocksInDepthImage()
+        self.kn.blockDetector()

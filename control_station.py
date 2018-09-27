@@ -122,6 +122,8 @@ class Gui(QMainWindow):
         self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
         self.ui.btnUser3.setText("Play")
         self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "play"))
+        self.ui.btnUser4.setText("Block Detection")
+        self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "blockDetection"))
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
         self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
