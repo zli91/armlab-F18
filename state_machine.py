@@ -180,4 +180,6 @@ class StateMachine():
         self.next_state = "idle"
         self.kinect.detectBlocksInDepthImage()
         (self.cubeCenter,self.detectedCubeColor) = self.kinect.blockDetector()
+        print self.cubeCenter
+        print self.detectedCubeColor
 

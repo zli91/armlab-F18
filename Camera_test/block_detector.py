@@ -4,31 +4,35 @@ import sys
 
 def blockDetector(depthImage,rgbImage,hsvImage):
     cubeColor = ['yellow','orange','pink','black','red','purple','green','blue']
-    rgbBoundaries = [ # b,g,r
-        ([4, 160, 240], [50, 210, 253]), # yellow
-        ([10, 85, 195], [30, 130, 205]), # orange
-        ([85, 48, 189], [110, 60, 210]), # pink
-        ([10, 21, 21], [50, 30, 38]), # black
-        ([26, 22, 140], [60, 38, 160]), # red
-        ([110, 65, 120], [127, 86, 140]), # purple
-        ([94, 120, 87],[108, 130, 105]), # green
-        ([130, 95, 80], [158, 99, 85]) # blue
+    # rgbBoundaries = [ # b,g,r
+    #     ([4, 160, 240], [50, 210, 253]), # yellow
+    #     ([10, 85, 195], [30, 130, 205]), # orange
+    #     ([85, 48, 189], [110, 60, 210]), # pink
+    #     ([10, 21, 21], [50, 30, 38]), # black
+    #     ([26, 22, 140], [60, 38, 160]), # red
+    #     ([110, 65, 120], [127, 86, 140]), # purple
+    #     ([94, 120, 87],[108, 130, 105]), # green
+    #     ([130, 95, 80], [158, 99, 85]) # blue
+    #     ]
+     hsvBoundaries = [ # h,s,v
+        ([2, 101, 236], [30, 156, 254]), # yellow
+        ([7, 185, 20], [12, 240, 66]), # orange
+        ([168, 152, 232], [175, 172, 246]), # pink
+        ([19, 5, 60], [178, 61, 79]), # black
+        ([171, 161, 172], [178, 201, 186]), # red
+        ([146, 60, 133], [162, 80, 154]), # purple
+        ([52, 85, 134],[80, 119, 151]), # green
+        ([110, 97, 159], [132, 126, 171]) # blue
         ]
-        # hsvBoundaries = [ # h,s,v
-        #     ([2, 101, 236], [30, 156, 254]), # yellow
-        #     ([7, 185, 20], [12, 240, 66]), # orange
-        #     ([168, 152, 232], [175, 172, 246]), # pink
-        #     ([19, 5, 60], [178, 61, 79]), # black
-        #     ([171, 161, 172], [178, 201, 186]), # red
-        #     ([146, 60, 133], [162, 80, 154]), # purple
-        #     ([52, 85, 134],[80, 119, 151]), # green
-        #     ([110, 97, 159], [132, 126, 171]) # blue
-        #     ]
         ## color detection in rgb image
         
     # initial info of cube center coord & color
     cubeCenter = []
     detectedCubeColor = []
+    colorDetectionPoints = []
+    hSum = 0
+    sSum = 0
+    vSum = 0
 
     # use threshold to detect blocks in depth image
     (grayLower,grayUpper) = (150, 178)
@@ -47,16 +51,36 @@ def blockDetector(depthImage,rgbImage,hsvImage):
         cubeMoment = cv2.moments(cubeContours[i])
         centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
         centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
+        # color detection points array
+        colorDetectionPoints = [(centerX,centerY), 
+            (centerX+3,centerY), 
+            (centerX,centerY+3), 
+            (centerX-3,centerY), 
+            (centerX,centerY-3),]
         
-        # find rgb
-        r = rgbImage[centerY][centerX][2]
-        g = rgbImage[centerY][centerX][1]
-        b = rgbImage[centerY][centerX][0]
-        for j in range(len(rgbBoundaries)):
-            (lower,upper) = rgbBoundaries[j]
+        # # find rgb
+        # r = rgbImage[centerY][centerX][2]
+        # g = rgbImage[centerY][centerX][1]
+        # b = rgbImage[centerY][centerX][0]
+
+        for k in range(len(colorDetectionPoints)):
+            # find hsv
+            h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
+            s = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
+            v = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
+            hSum = hSum + h
+            sSum = sSum + s
+            vSum = vSum + v
+        hAve = hSum/len(colorDetectionPoints)
+        sAve = sSum/len(colorDetectionPoints)
+        vAve = vSum/len(colorDetectionPoints)
+
+        for j in range(len(hsvBoundaries)):
+            (lower,upper) = hsvBoundaries[j]
             lower = np.array(lower, dtype="uint8")
             upper = np.array(upper, dtype="uint8")
-            if r >= lower[2] and r <= upper[2] and g >= lower[1] and g <= upper[1] and b >= lower[0] and b <= upper[0] :
+            # if r >= lower[2] and r <= upper[2] and g >= lower[1] and g <= upper[1] and b >= lower[0] and b <= upper[0] :
+            if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
                 # define colors
                 detectedCubeColor.append(cubeColor[j])
                 # draw contours

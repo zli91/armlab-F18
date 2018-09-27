@@ -179,7 +179,7 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([2, 101, 236], [30, 156, 254]), # yellow
+            ([29, 110, 250], [32, 170, 255]), # yellow
             ([7, 185, 20], [12, 240, 66]), # orange
             ([168, 152, 232], [175, 172, 246]), # pink
             ([19, 5, 60], [178, 61, 79]), # black
@@ -195,23 +195,40 @@ class Kinect():
         # print len(self.cubeContours)
         self.cubeCenter = []
         self.detectedCubeColor = []
+        colorDetectionPoints = []
+        hSum = 0
+        sSum = 0
+        vSum = 0
         for i in range(len(self.cubeContours)):        
             # find center of mass
             cubeMoment = cv2.moments(self.cubeContours[i])
             centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
-            # find nearby point
-            
-            # find hsv
-            h = self.hsvImage[centerY][centerX][0]
-            s = self.hsvImage[centerY][centerX][1]
-            v = self.hsvImage[centerY][centerX][2]
+
+            # color detection points array
+            colorDetectionPoints = [(centerX,centerY), 
+                (centerX+1,centerY), 
+                (centerX,centerY+1), 
+                (centerX-1,centerY), 
+                (centerX,centerY-1),]
+            for k in range(len(colorDetectionPoints)):
+                # find hsv
+                h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
+                s = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
+                v = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
+                hSum = hSum + h
+                sSum = sSum + s
+                vSum = vSum + v
+            hAve = hSum/len(colorDetectionPoints)
+            sAve = sSum/len(colorDetectionPoints)
+            vAve = vSum/len(colorDetectionPoints)
+            print (hAve,sAve,vAve)
 
             for j in range(len(hsvBoundaries)):
                 (lower,upper) = hsvBoundaries[j]
                 lower = np.array(lower, dtype="uint8")
                 upper = np.array(upper, dtype="uint8")
-                if h >= lower[0] and h <= upper[0] and s >= lower[1] and s <= upper[1] and v >= lower[2] and v <= upper[2]:
+                if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
                     # define colors
                     self.detectedCubeColor.append(cubeColor[j])
                     # draw contours
