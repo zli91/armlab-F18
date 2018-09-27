@@ -192,27 +192,35 @@ class Kinect():
         # r = self.rgbImage[centerY][centerX][2]
         # g = self.rgbImage[centerY][centerX][1]
         # b = self.rgbImage[centerY][centerX][0]
-        print len(self.cubeContours)
+        # print len(self.cubeContours)
+        self.cubeCenter = []
+        self.detectedCubeColor = []
         for i in range(len(self.cubeContours)):        
-            # find moment
+            # find center of mass
             cubeMoment = cv2.moments(self.cubeContours[i])
             centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
+            # find nearby point
+            
             # find hsv
             h = self.hsvImage[centerY][centerX][0]
             s = self.hsvImage[centerY][centerX][1]
             v = self.hsvImage[centerY][centerX][2]
-            # print h,s,v
+
             for j in range(len(hsvBoundaries)):
                 (lower,upper) = hsvBoundaries[j]
-                if (h,s,v) >= lower and (h,s,v) <= upper:
-                    # define color
-                    print cubeColor[j]
+                lower = np.array(lower, dtype="uint8")
+                upper = np.array(upper, dtype="uint8")
+                if h >= lower[0] and h <= upper[0] and s >= lower[1] and s <= upper[1] and v >= lower[2] and v <= upper[2]:
+                    # define colors
+                    self.detectedCubeColor.append(cubeColor[j])
                     # draw contours
                     cv2.drawContours(self.currentVideoFrame,[self.cubeContours[i]],-1,(0,255,0),3)
+                    # record coords
+                    self.cubeCenter.append([centerX,centerY])
                 else:
                     continue
-        return None
+        return self.cubeCenter, self.detectedCubeColor
 
 
 
@@ -222,33 +230,27 @@ class Kinect():
         Implement a blob detector to find blocks
         in the depth image
         """
-        
+        # convert depthImage into 8 bits
         depthImage = self.currentDepthFrame
         np.clip(depthImage,0,2**10 - 1,depthImage)
         depthImage >>= 2
         depthImage = depthImage.astype(np.uint8)
-
+        # load rgb image produce hsv image 
         self.rgbImage = self.currentVideoFrame
         self.rgbImage = cv2.cvtColor(self.rgbImage, cv2.COLOR_BGR2RGB)
         self.hsvImage = cv2.cvtColor(self.rgbImage, cv2.COLOR_BGR2HSV)
-
+        # use grayscale in depth image to detect object
         (grayLower,grayUpper) = (150, 178)
         grayLower = np.array(grayLower,dtype = "uint8")
         grayUpper = np.array(grayUpper,dtype = "uint8")
         grayThreshold = cv2.inRange(depthImage,grayLower,grayUpper)
-        
-        # Morpholigical Operations
+        # dilation
         kernel = np.ones((5,5),np.uint8)
         grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
         # find countors
         _, self.cubeContours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        # cv2.drawContours(self.currentVideoFrame,self.cubeContours,-1,(0,255,0),3)
+
         return None
 
 
-
-# visualization
-            # cv2.namedWindow("window",cv2.WINDOW_AUTOSIZE)
-            # cv2.imshow('window', self.rgbImage)
-            # cv2.waitKey(0)
 

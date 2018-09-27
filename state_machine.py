@@ -179,5 +179,5 @@ class StateMachine():
         self.status_message = "State: Block Detection -Start"
         self.next_state = "idle"
         self.kinect.detectBlocksInDepthImage()
-        self.kinect.blockDetector()
+        (self.cubeCenter,self.detectedCubeColor) = self.kinect.blockDetector()
 
