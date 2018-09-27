@@ -180,37 +180,55 @@ class Kinect():
         #     ]
         hsvBoundaries = [ # h,s,v
             ([29, 110, 250], [32, 170, 255]), # yellow
-            ([7, 185, 20], [12, 240, 66]), # orange
-            ([168, 152, 232], [175, 172, 246]), # pink
+            ([5, 200, 220], [15, 250, 250]), # orange
+            ([160, 149, 230], [180, 172, 246]), # pink
             ([19, 5, 60], [178, 61, 79]), # black
-            ([171, 161, 172], [178, 201, 186]), # red
-            ([146, 60, 133], [162, 80, 154]), # purple
-            ([52, 85, 134],[80, 119, 151]), # green
-            ([110, 97, 159], [132, 126, 171]) # blue
+            ([171, 161, 172], [178, 190, 186]), # red
+            ([140, 60, 128], [152, 80, 140]), # purple
+            ([52, 85, 134],[85, 120, 151]), # green
+            ([110, 130, 180], [122, 170, 200]) # blue
             ]
+        # hsvBoundaries = [ # h,s,v
+        #     ([25, 110, 250], [35, 170, 255]), # yellow
+        #     ([5, 200, 220], [15, 250, 250]), # orange
+        #     ([160, 145, 230], [180, 175, 245]), # pink
+        #     ([20, 5, 60], [180, 65, 80]), # black
+        #     ([170, 160, 175], [180, 190, 185]), # red
+        #     ([140, 60, 125], [155, 80, 140]), # purple
+        #     ([50, 85, 130],[85, 120, 155]), # green
+        #     ([110, 130, 180], [125, 170, 200]) # blue
+        #     ]
         ### color detection in rgb image
         # r = self.rgbImage[centerY][centerX][2]
         # g = self.rgbImage[centerY][centerX][1]
         # b = self.rgbImage[centerY][centerX][0]
-        # print len(self.cubeContours)
+        # print len(self.contours)
         self.cubeCenter = []
         self.detectedCubeColor = []
         colorDetectionPoints = []
-        hSum = 0
-        sSum = 0
-        vSum = 0
-        for i in range(len(self.cubeContours)):        
+        self.cubeContours = []
+        
+        for i in range(len(self.contours)):        
             # find center of mass
-            cubeMoment = cv2.moments(self.cubeContours[i])
+            cubeMoment = cv2.moments(self.contours[i])
             centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
 
             # color detection points array
-            colorDetectionPoints = [(centerX,centerY), 
-                (centerX+1,centerY), 
-                (centerX,centerY+1), 
-                (centerX-1,centerY), 
-                (centerX,centerY-1),]
+            colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
+                (centerX-2,centerY-3), (centerX-2,centerY-2), (centerX-2,centerY-1), (centerX-2,centerY), (centerX-2,centerY+1), (centerX-2,centerY+2), (centerX-2,centerY+3), 
+                (centerX-1,centerY-3), (centerX-1,centerY-2), (centerX-1,centerY-1), (centerX-1,centerY), (centerX-1,centerY+1), (centerX-1,centerY+2), (centerX-1,centerY+3), 
+                (centerX,centerY-3), (centerX,centerY-2), (centerX,centerY-1), (centerX,centerY), (centerX,centerY+1), (centerX,centerY+2), (centerX,centerY+3), 
+                (centerX+1,centerY-3), (centerX+1,centerY-2), (centerX+1,centerY-1), (centerX+1,centerY), (centerX+1,centerY+1), (centerX+1,centerY+2), (centerX+1,centerY+3),
+                (centerX+2,centerY-3), (centerX+2,centerY-2), (centerX+2,centerY-1), (centerX+2,centerY), (centerX+2,centerY+1), (centerX+2,centerY+2), (centerX+2,centerY+3),
+                (centerX+3,centerY-3), (centerX+3,centerY-2), (centerX+3,centerY-1), (centerX+3,centerY), (centerX+3,centerY+1), (centerX+3,centerY+2), (centerX+3,centerY+3),
+                ]
+            hSum = 0
+            sSum = 0
+            vSum = 0
+            hAve = 0
+            sAve = 0
+            vAve = 0
             for k in range(len(colorDetectionPoints)):
                 # find hsv
                 h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
@@ -222,7 +240,6 @@ class Kinect():
             hAve = hSum/len(colorDetectionPoints)
             sAve = sSum/len(colorDetectionPoints)
             vAve = vSum/len(colorDetectionPoints)
-            print (hAve,sAve,vAve)
 
             for j in range(len(hsvBoundaries)):
                 (lower,upper) = hsvBoundaries[j]
@@ -231,13 +248,14 @@ class Kinect():
                 if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
                     # define colors
                     self.detectedCubeColor.append(cubeColor[j])
-                    # draw contours
-                    cv2.drawContours(self.currentVideoFrame,[self.cubeContours[i]],-1,(0,255,0),3)
+                    # record contours
+                    self.cubeContours.append(self.contours[i])
                     # record coords
                     self.cubeCenter.append([centerX,centerY])
                 else:
                     continue
-        return self.cubeCenter, self.detectedCubeColor
+
+        return self.cubeCenter, self.detectedCubeColor, self.cubeContours
 
 
 
@@ -265,7 +283,7 @@ class Kinect():
         kernel = np.ones((5,5),np.uint8)
         grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
         # find countors
-        _, self.cubeContours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
         return None
 

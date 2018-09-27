@@ -14,15 +14,15 @@ def blockDetector(depthImage,rgbImage,hsvImage):
     #     ([94, 120, 87],[108, 130, 105]), # green
     #     ([130, 95, 80], [158, 99, 85]) # blue
     #     ]
-     hsvBoundaries = [ # h,s,v
-        ([2, 101, 236], [30, 156, 254]), # yellow
-        ([7, 185, 20], [12, 240, 66]), # orange
-        ([168, 152, 232], [175, 172, 246]), # pink
-        ([19, 5, 60], [178, 61, 79]), # black
-        ([171, 161, 172], [178, 201, 186]), # red
-        ([146, 60, 133], [162, 80, 154]), # purple
-        ([52, 85, 134],[80, 119, 151]), # green
-        ([110, 97, 159], [132, 126, 171]) # blue
+    hsvBoundaries = [ # h,s,v
+        ([20, 220, 240], [25,255, 255]), # yellow
+        ([5, 200, 195], [15, 250, 205]), # orange
+        ([170, 180, 190], [174, 194, 205]), # pink
+        ([0, 20, 25], [180, 150, 50]), # black
+        ([175, 195, 140], [180, 210, 155]), # red
+        ([150, 90, 120], [165, 105, 135]), # purple
+        ([50, 45, 115],[65, 60, 130]), # green
+        ([110, 110, 140], [120, 125, 155]) # blue
         ]
         ## color detection in rgb image
         
@@ -30,9 +30,6 @@ def blockDetector(depthImage,rgbImage,hsvImage):
     cubeCenter = []
     detectedCubeColor = []
     colorDetectionPoints = []
-    hSum = 0
-    sSum = 0
-    vSum = 0
 
     # use threshold to detect blocks in depth image
     (grayLower,grayUpper) = (150, 178)
@@ -52,12 +49,21 @@ def blockDetector(depthImage,rgbImage,hsvImage):
         centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
         centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
         # color detection points array
-        colorDetectionPoints = [(centerX,centerY), 
-            (centerX+3,centerY), 
-            (centerX,centerY+3), 
-            (centerX-3,centerY), 
-            (centerX,centerY-3),]
-        
+        colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
+            (centerX-2,centerY-3), (centerX-2,centerY-2), (centerX-2,centerY-1), (centerX-2,centerY), (centerX-2,centerY+1), (centerX-2,centerY+2), (centerX-2,centerY+3), 
+            (centerX-1,centerY-3), (centerX-1,centerY-2), (centerX-1,centerY-1), (centerX-1,centerY), (centerX-1,centerY+1), (centerX-1,centerY+2), (centerX-1,centerY+3), 
+            (centerX,centerY-3), (centerX,centerY-2), (centerX,centerY-1), (centerX,centerY), (centerX,centerY+1), (centerX,centerY+2), (centerX,centerY+3), 
+            (centerX+1,centerY-3), (centerX+1,centerY-2), (centerX+1,centerY-1), (centerX+1,centerY), (centerX+1,centerY+1), (centerX+1,centerY+2), (centerX+1,centerY+3),
+            (centerX+2,centerY-3), (centerX+2,centerY-2), (centerX+2,centerY-1), (centerX+2,centerY), (centerX+2,centerY+1), (centerX+2,centerY+2), (centerX+2,centerY+3),
+            (centerX+3,centerY-3), (centerX+3,centerY-2), (centerX+3,centerY-1), (centerX+3,centerY), (centerX+3,centerY+1), (centerX+3,centerY+2), (centerX+3,centerY+3),
+            ]
+        hSum = 0
+        sSum = 0
+        vSum = 0
+        hAve = 0
+        sAve = 0
+        vAve = 0
+
         # # find rgb
         # r = rgbImage[centerY][centerX][2]
         # g = rgbImage[centerY][centerX][1]
@@ -65,9 +71,9 @@ def blockDetector(depthImage,rgbImage,hsvImage):
 
         for k in range(len(colorDetectionPoints)):
             # find hsv
-            h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
-            s = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
-            v = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
+            h = hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
+            s = hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
+            v = hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
             hSum = hSum + h
             sSum = sSum + s
             vSum = vSum + v

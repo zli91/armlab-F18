@@ -3,7 +3,8 @@ import numpy as np
 from rexarm import Rexarm as rexarm
 from trajectory_planner import TrajectoryPlanner as tp
 from kinect import Kinect as kinect
-
+import cv2
+import freenect
 
 
 """
@@ -179,7 +180,9 @@ class StateMachine():
         self.status_message = "State: Block Detection -Start"
         self.next_state = "idle"
         self.kinect.detectBlocksInDepthImage()
-        (self.cubeCenter,self.detectedCubeColor) = self.kinect.blockDetector()
+        (self.cubeCenter,self.detectedCubeColor,self.cubeContours) = self.kinect.blockDetector()
         print self.cubeCenter
         print self.detectedCubeColor
+        # draw contours
+        cv2.drawContours(self.kinect.currentVideoFrame,self.cubeContours,-1,(0,255,0),3)
 
