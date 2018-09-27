@@ -176,7 +176,8 @@ class StateMachine():
 
     def blockDetection(self):
         self.current_state = "blockDetection"
-        self.status_message = "State: Block Detection"
+        self.status_message = "State: Block Detection -Start"
         self.next_state = "idle"
         self.kinect.detectBlocksInDepthImage()
         self.kinect.blockDetector()
+
