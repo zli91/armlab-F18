@@ -24,7 +24,6 @@ def FK_dh(joint_angles, link):
 
 def FK_pox(joint_angles):
     """
-    TODO: implement this function
 
     Calculate forward kinematics for rexarm
     using product of exponential formulation
@@ -35,6 +34,13 @@ def FK_pox(joint_angles):
     note: phi is the euler angle about y in the base frame
 
     """
+    l1 = 118;
+    l2 = 99;
+    l3 = 99;
+    l4 = 143.6;
+    w1 = np.array([[0, -1, 0],[1,0,0],[0,0,0]]) # rotation in z-axis
+    w2 = np.array([[0, 0, 1],[0,0,0],[-1,0,0]]) # rotation in y-axis
+
     pass
 
 def IK(pose):
