@@ -11,6 +11,7 @@ class Kinect():
         self.currentVideoFrame = np.array([])
         self.currentDepthFrame = np.array([])
         self.convert_to_world = np.array([])
+        self.cubeContours = np.array([])
         if(freenect.sync_get_depth() == None):
             self.kinectConnected = False
         else:
@@ -23,6 +24,8 @@ class Kinect():
         self.new_click = False
         self.rgb_click_points = np.zeros((5,2),int)
         self.depth_click_points = np.zeros((5,2),int)
+
+        self.blockDetected = False
 
         """ Extra arrays for colormaping the depth image"""
         self.DepthHSV = np.zeros((480,640,3)).astype(np.uint8)
@@ -37,13 +40,17 @@ class Kinect():
         """
         if(self.kinectConnected):
             self.currentVideoFrame = freenect.sync_get_video()[0]
+            if(self.blockDetected):
+                self.processVideoFrame()
         else:
             self.loadVideoFrame()
-        self.processVideoFrame()
+
         
 
     def processVideoFrame(self):
-        cv2.drawContours(self.currentVideoFrame,self.block_contours,-1,(255,0,255),3)
+        # draw contours
+        cv2.drawContours(self.currentVideoFrame,self.cubeContours,-1,(0,255,0),3)
+
 
 
     def captureDepthFrame(self):
@@ -130,7 +137,7 @@ class Kinect():
         # print cv2.getAffineTransform(pts1,pts2)
         # return cv2.getAffineTransform(pts1,pts2)
         # self.depth2rgb_affine = result
-        print result
+        # print result
         return result
 
 
@@ -179,7 +186,7 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([29, 110, 250], [32, 170, 255]), # yellow
+            ([20, 0, 240], [40, 255, 255]), # yellow
             ([5, 200, 220], [15, 250, 250]), # orange
             ([160, 149, 230], [180, 172, 246]), # pink
             ([19, 5, 60], [178, 61, 79]), # black
@@ -188,21 +195,12 @@ class Kinect():
             ([52, 85, 134],[85, 120, 151]), # green
             ([110, 130, 180], [122, 170, 200]) # blue
             ]
-        # hsvBoundaries = [ # h,s,v
-        #     ([25, 110, 250], [35, 170, 255]), # yellow
-        #     ([5, 200, 220], [15, 250, 250]), # orange
-        #     ([160, 145, 230], [180, 175, 245]), # pink
-        #     ([20, 5, 60], [180, 65, 80]), # black
-        #     ([170, 160, 175], [180, 190, 185]), # red
-        #     ([140, 60, 125], [155, 80, 140]), # purple
-        #     ([50, 85, 130],[85, 120, 155]), # green
-        #     ([110, 130, 180], [125, 170, 200]) # blue
-        #     ]
+
         ### color detection in rgb image
         # r = self.rgbImage[centerY][centerX][2]
         # g = self.rgbImage[centerY][centerX][1]
         # b = self.rgbImage[centerY][centerX][0]
-        # print len(self.contours)
+
         self.cubeCenter = []
         self.detectedCubeColor = []
         colorDetectionPoints = []
@@ -213,6 +211,16 @@ class Kinect():
             cubeMoment = cv2.moments(self.contours[i])
             centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
+
+            # # # find if center is in world frame
+            # convertToWorld = np.array([])
+            # world_coordinates = np.array([[0,0], [0,603.25], [608, 603.25], [608,0], [304, 301.625]])
+            # worldAffine = self.getAffineTransform(self.rgb_click_points, world_coordinates, 4)
+            # convertToWorld = np.append(worldAffine, [[0, 0, 1]], axis=0)
+            # centerCoordInWorld = np.matmul(convertToWorld, [centerX,centerY,??????])
+            # print centerCoordInWorld
+            # if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 :
+            #     break
 
             # color detection points array
             colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
@@ -254,9 +262,9 @@ class Kinect():
                     self.cubeCenter.append([centerX,centerY])
                 else:
                     continue
-
-        return self.cubeCenter, self.detectedCubeColor, self.cubeContours
-
+        print self.cubeCenter
+        print self.detectedCubeColor
+        return None
 
 
     def detectBlocksInDepthImage(self):
@@ -270,11 +278,14 @@ class Kinect():
         np.clip(depthImage,0,2**10 - 1,depthImage)
         depthImage >>= 2
         depthImage = depthImage.astype(np.uint8)
+
         # load rgb image produce hsv image 
         self.rgbImage = self.currentVideoFrame
         self.rgbImage = cv2.cvtColor(self.rgbImage, cv2.COLOR_BGR2RGB)
         self.hsvImage = cv2.cvtColor(self.rgbImage, cv2.COLOR_BGR2HSV)
-        # use grayscale in depth image to detect object
+        # use grayscale in depth to measure the depth of object
+
+        # detect object
         (grayLower,grayUpper) = (150, 178)
         grayLower = np.array(grayLower,dtype = "uint8")
         grayUpper = np.array(grayUpper,dtype = "uint8")
@@ -284,6 +295,7 @@ class Kinect():
         grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
         # find countors
         _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
 
         return None
 

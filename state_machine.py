@@ -50,8 +50,10 @@ class StateMachine():
                 self.recordWaypoint()
             if(self.next_state == "play"):
                 self.play()
-            if(self.next_state == "blockDetection"):
-                self.blockDetection()
+            if(self.next_state == "blockDetectionStart"):
+                self.blockDetectionStart()
+            if(self.next_state == "blockDetectionEnd"):
+                self.blockDetectionEnd()
                 
         if(self.current_state == "estop"):
             self.next_state = "estop"
@@ -75,7 +77,11 @@ class StateMachine():
             if(self.next_state == "idle"):
                 self.idle()
 
-        if(self.current_state == "blockDetection"):
+        if(self.current_state == "blockDetectionStart"):
+            if(self.next_state == "blockDetectionEnd"):
+                self.blockDetectionEnd()
+
+        if(self.current_state == "blockDetectionEnd"):
             if(self.next_state == "idle"):
                 self.idle()
 
@@ -175,14 +181,23 @@ class StateMachine():
         self.status_message = "Calibration - Completed Calibration"
         time.sleep(1)
 
-    def blockDetection(self):
-        self.current_state = "blockDetection"
-        self.status_message = "State: Block Detection -Start"
-        self.next_state = "idle"
+    def blockDetectionStart(self):
+        self.current_state = "blockDetectionStart"
+        self.status_message = "State: Block Detection - Start"
+        self.next_state = "blockDetectionStart"
+        # self.kinect.processVideoFrame()
         self.kinect.detectBlocksInDepthImage()
-        (self.cubeCenter,self.detectedCubeColor,self.cubeContours) = self.kinect.blockDetector()
-        print self.cubeCenter
-        print self.detectedCubeColor
-        # draw contours
-        cv2.drawContours(self.kinect.currentVideoFrame,self.cubeContours,-1,(0,255,0),3)
+        self.kinect.blockDetector()
+        self.kinect.blockDetected = True
+
+
+    def blockDetectionEnd(self):
+        self.current_state = "blockDetectionEnd"
+        self.status_message = "State: Block Detection - End"
+        self.next_state = "idle"
+        self.kinect.blockDetected = False
+
+
+
+        
 
