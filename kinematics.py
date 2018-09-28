@@ -1,6 +1,8 @@
 import numpy as np
+from math import *
 #expm is a matrix exponential function
 from scipy.linalg import expm
+np.set_printoptions(precision=5)
 
 """ 
 TODO: Here is where you will write all of your kinematics functions 
@@ -9,6 +11,49 @@ There are some functions to start with, you may need to implement a few more
 """
 
 def FK_dh(joint_angles, link):
+    th1,joint_angles=np.split(joint_angles,[1])
+    th2,joint_angles=np.split(joint_angles,[1])
+    th3,th4=np.split(joint_angles,[1])
+    th1 = float(th1)
+    th2 = float(th2)
+    th3 = float(th3)
+    th4 = float(th4)
+    
+    T1 = [
+         [ cos(th1),   0,      sin(th1),     0],
+         [ sin(th1),   0, -1.0*cos(th1),     0],
+         [        0, 1.0,             0, 118.0],
+         [        0,   0,             0,   1.0]
+         ]
+
+    
+    T2 = [
+         [ cos(th1)*cos(th2), -1.0*cos(th1)*sin(th2),      sin(th1), 99.0*cos(th1)*cos(th2)],
+         [ cos(th2)*sin(th1), -1.0*sin(th1)*sin(th2), -1.0*cos(th1), 99.0*cos(th2)*sin(th1)],
+         [          sin(th2),               cos(th2),             0,  99.0*sin(th2) + 118.0],
+         [                 0,                      0,             0,                    1.0]
+         ]
+    
+    T3 = [
+         [ cos(th1)*cos(th2)*cos(th3) - 1.0*cos(th1)*sin(th2)*sin(th3), - 1.0*cos(th1)*cos(th2)*sin(th3) - 1.0*cos(th1)*cos(th3)*sin(th2),      sin(th1), 99.0*cos(th1)*cos(th2) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
+         [ cos(th2)*cos(th3)*sin(th1) - 1.0*sin(th1)*sin(th2)*sin(th3), - 1.0*cos(th2)*sin(th1)*sin(th3) - 1.0*cos(th3)*sin(th1)*sin(th2), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
+         [                       cos(th2)*sin(th3) + cos(th3)*sin(th2),                         cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3),             0,                    99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 118.0],
+         [                                                           0,                                                                 0,             0,                                                                                        1.0]
+         ]
+        
+    T4 = [
+         [ - 1.0*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)), sin(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*cos(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)),      sin(th1), 99.0*cos(th1)*cos(th2) - 143.6*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 143.6*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
+         [ - 1.0*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), sin(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*cos(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 143.6*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 143.6*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
+         [                                               sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                     cos(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) - 1.0*sin(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),             0,                                                        99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 143.6*sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + 143.6*cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + 118.0],
+         [                                                                                                                                                     0,                                                                                                                                               0,             0,                                                                                                                                                                                                                                                  1.0]
+         ]
+    FK4 = np.round([T1,T2,T3,T4],6)
+    #FK4 = format([T1,T2,T3,T4], '.2f')
+    #FK4 = ([T1,T2,T3,T4])
+    #print 'FK_DH result:\n',(np.matrix(FK4[link-1]))
+    print  (np.matrix(FK4[link-1])) 
+    return np.matrix(FK4[link-1])
+
     """
     TODO: implement this function
 
@@ -44,6 +89,44 @@ def FK_pox(joint_angles):
     pass
 
 def IK(pose):
+    
+    d1 = 118
+    a2 = 99
+    a3 = 99
+    a4 = 143.6
+    Xe,pose=np.split(pose,[1])
+    Ye,pose=np.split(pose,[1])
+    Ze,phi=np.split(pose,[1])
+    Xe = float(Xe)
+    Ye = float(Ye)
+    Ze = float(Ze) - d1
+    phi = float(phi)
+    
+    #parameters:
+    
+    Re = (Xe**2 + Ye**2)**0.5
+    print 'Re:',Re
+    dR = Re - a4*cos(-phi)
+    print 'dR:',dR
+    dZ = Ze + a4*sin(-phi)
+    print 'dZ',dZ
+    beta = atan2(dZ,dR)
+    print 'beta:',beta
+    th1 = atan2(Ye,Xe)
+    print 'th1:',th1
+    print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
+    th3 = acos(1.0)
+    #return [0,0,0,0]
+    th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
+    print 'th3:',th3
+    alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
+    print 'alpha:',alpha
+    th2 = beta+alpha
+    print 'th2:',th2
+    th4 = phi - th2 - th3
+    
+    print 'IK result:',[th1,th2,th3,th4]
+    return[th1,th2,th3,th4]
     """
     TODO: implement this function
 
