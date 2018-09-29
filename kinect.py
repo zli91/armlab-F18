@@ -186,14 +186,14 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([20, 0, 240], [40, 255, 255]), # yellow
-            ([5, 200, 220], [15, 250, 250]), # orange
-            ([160, 149, 230], [180, 172, 246]), # pink
-            ([19, 5, 60], [178, 61, 79]), # black
-            ([171, 161, 172], [178, 190, 186]), # red
-            ([140, 60, 128], [152, 80, 140]), # purple
-            ([52, 85, 134],[85, 120, 151]), # green
-            ([110, 130, 180], [122, 170, 200]) # blue
+            ([20, 30, 101], [40, 255, 255]), # yellow
+            ([0, 30, 101], [15, 255, 255]), # orange
+            ([160, 110, 230], [180, 150, 255]), # pink
+            ([0, 0, 80], [255, 255, 100]), # black
+            ([160, 165, 140], [180, 255, 200]), # red
+            ([120, 30, 140], [155, 100, 210]), # purple
+            ([45, 60, 130],[80, 100, 160]), # green
+            ([105, 130, 160], [125, 170, 200]) # blue
             ]
 
         ### color detection in rgb image
@@ -212,15 +212,10 @@ class Kinect():
             centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
 
-            # # # find if center is in world frame
-            # convertToWorld = np.array([])
-            # world_coordinates = np.array([[0,0], [0,603.25], [608, 603.25], [608,0], [304, 301.625]])
-            # worldAffine = self.getAffineTransform(self.rgb_click_points, world_coordinates, 4)
-            # convertToWorld = np.append(worldAffine, [[0, 0, 1]], axis=0)
-            # centerCoordInWorld = np.matmul(convertToWorld, [centerX,centerY,??????])
-            # print centerCoordInWorld
-            # if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 :
-            #     break
+            # # find if center is in world frame
+            centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])
+            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (240 < centerCoordInWorld[0] < 355 and 270 < centerCoordInWorld[1] < 370):
+                continue
 
             # color detection points array
             colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
@@ -259,7 +254,7 @@ class Kinect():
                     # record contours
                     self.cubeContours.append(self.contours[i])
                     # record coords
-                    self.cubeCenter.append([centerX,centerY])
+                    self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
                 else:
                     continue
         print self.cubeCenter
