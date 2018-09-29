@@ -139,12 +139,10 @@ def IK(pose):
     
     print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
-    Ys = [0,a2*sin(th2),sin(th2)+a3*sin(th2+th3),sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
-    #plt.plot(0,1,2,3)
-    #plt.show()
-    x = np.arange(0, 5, 0.1);
-    y = np.sin(x)
-    plt.plot(x, y)
+    Ys = [0,a2*sin(th2),a2*sin(th2)+a3*sin(th2+th3),a2*sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
+    plt.plot(Xs,Ys,'-o')
+    plt.title('plot for X Y Z phi:' )
+    plt.show()
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
@@ -183,3 +181,5 @@ def to_s_matrix(w,v):
     Find the [s] matrix for the POX method e^([s]*theta)
     """
     pass
+
+FK_dh(IK([0,100,100,-pi/2]),4)
