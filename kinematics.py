@@ -3,14 +3,19 @@ from math import *
 #expm is a matrix exponential function
 from scipy.linalg import expm
 np.set_printoptions(precision=5)
+import matplotlib.pyplot as plt
 
 """ 
 TODO: Here is where you will write all of your kinematics functions 
 There are some functions to start with, you may need to implement a few more
 
 """
+input = [[1],[2],[3],[4]]
+
 
 def FK_dh(joint_angles, link):
+    if joint_angles == 0:
+        return
     th1,joint_angles=np.split(joint_angles,[1])
     th2,joint_angles=np.split(joint_angles,[1])
     th3,th4=np.split(joint_angles,[1])
@@ -97,6 +102,9 @@ def IK(pose):
     Xe,pose=np.split(pose,[1])
     Ye,pose=np.split(pose,[1])
     Ze,phi=np.split(pose,[1])
+    if phi>0:
+        print 'error: phi must be negative according to convention'
+        return 0
     Xe = float(Xe)
     Ye = float(Ye)
     Ze = float(Ze) - d1
@@ -106,7 +114,13 @@ def IK(pose):
     
     Re = (Xe**2 + Ye**2)**0.5
     print 'Re:',Re
-    dR = Re - a4*cos(-phi)
+    if (Re>341.6 or Ze>118+341.6):
+        print 'error: location out of range'
+        return 0
+    elif Re>a2+a3+a4*cos(-phi):
+        print 'error: euler angle too stiff'
+        return 0
+    dR = Re - a4*cos(phi)
     print 'dR:',dR
     dZ = Ze + a4*sin(-phi)
     print 'dZ',dZ
@@ -114,9 +128,7 @@ def IK(pose):
     print 'beta:',beta
     th1 = atan2(Ye,Xe)
     print 'th1:',th1
-    print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
-    th3 = acos(1.0)
-    #return [0,0,0,0]
+    print 'dRdZ:' ,(dZ**2+dR**2)**0.5
     th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
     print 'th3:',th3
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
@@ -126,6 +138,13 @@ def IK(pose):
     th4 = phi - th2 - th3
     
     print 'IK result:',[th1,th2,th3,th4]
+    Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
+    Ys = [0,a2*sin(th2),sin(th2)+a3*sin(th2+th3),sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
+    #plt.plot(0,1,2,3)
+    #plt.show()
+    x = np.arange(0, 5, 0.1);
+    y = np.sin(x)
+    plt.plot(x, y)
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
