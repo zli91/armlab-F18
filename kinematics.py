@@ -142,7 +142,7 @@ def IK(pose):
     Ys = [0,a2*sin(th2),a2*sin(th2)+a3*sin(th2+th3),a2*sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
     plt.plot(Xs,Ys,'-o')
     plt.title('plot for X Y Z phi:' )
-    plt.show()
+    #plt.show()
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
@@ -159,11 +159,30 @@ def get_euler_angles_from_T(T):
     """
     TODO: implement this function
     return the Euler angles from a T matrix
-    
+
     """
-    pass
+    a13 = T[0,2]
+    a23 = T[1,2]
+    a33 = T[2,2]
+    a31 = T[2,0]
+    a32 = T[2,1]
+    print 'a13-a31',a13,a23,a33,a32,a31
+    theta = round(atan2((1-a33**2)**0.5,a33),3)
+    psi = round(atan2(a13,-a23),3)
+    delta = round(atan2(a31,a32),3)
+    euler = [psi,theta,delta]
+    print 'euler angle Z(psi)X(theta)Z(delta):',euler
+    return euler
+    
 
 def get_pose_from_T(T):
+    X=round(T[0,3],3)
+    Y=round(T[1,3],3)
+    Z=round(T[2,3],3)
+    phi = round(get_euler_angles_from_T(T)[2],3)
+    pose = [X,Y,Z,phi]
+    print 'pose(X Y Z phi):',pose
+    return pose
     """
     TODO: implement this function
     return the joint pose from a T matrix
@@ -182,4 +201,6 @@ def to_s_matrix(w,v):
     """
     pass
 
-FK_dh(IK([0,100,100,-pi/2]),4)
+#test code
+get_euler_angles_from_T(FK_dh(IK([0,100,100,-pi/2]),4))
+get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
