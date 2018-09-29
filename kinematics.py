@@ -84,12 +84,52 @@ def FK_pox(joint_angles):
     note: phi is the euler angle about y in the base frame
 
     """
-    l1 = 118;
+    l1 = 118;   # lengths of links in mm
     l2 = 99;
     l3 = 99;
     l4 = 143.6;
-    w1 = np.array([[0, -1, 0],[1,0,0],[0,0,0]]) # rotation in z-axis
-    w2 = np.array([[0, 0, 1],[0,0,0],[-1,0,0]]) # rotation in y-axis
+    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+    y_off = 292.1
+    # matrix changing tool frame to world frame
+    # set the world frame here centered at the bottom center of the base
+    M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,l1+l2+l3+l4],[0,0,0,1]])
+    # angular velocities
+    wz = np.array([[0, -1, 0],[1,0,0],[0,0,0]]) # rotation in z-axis
+    wzv = np.array([[0],[0],[1]])
+    wy = np.array([[0, 0, 1],[0,0,0],[-1,0,0]]) # rotation in y-axis
+    wyv = np.array([[0],[1],[0]])
+    zeros = np.array([[0,0,0,1]])
+    # linear velocities
+    v = [np.array([[0],[0],[0]]),np.array([[0-l1],[0],[0]]),np.array([[0-l1-l2],[0],[0]]),np.array([[0-l1-l2-l3],[0],[0]])]
+    s = [];
+    # compute exponential matrices
+    # e: e^(omega,theta); t: t; s: the twist
+    # s[0]: twist for the base
+    e = np.identity(3) + wz*sin(joint_angles[0]) + np.linalg.matrix_power(wz, 2)*(1-cos(joint_angles[0]))
+    wzv_13 = wzv.reshape(1,3);
+    v_13 = v[0].reshape(1,3);
+    cross = np.cross(wzv_13,v_13).reshape(3,1)
+    t = np.dot((np.identity(3)-e),cross) + np.dot(np.dot(wzv,wzv_13),v[0])*joint_angles[0]
+    s.append(np.concatenate(((np.concatenate((e,t.reshape(3,1)),axis=1)),zeros),axis=0))
+
+    # s[1:3]: twist for should, elbow, and wrist
+    for i in range(1,4):
+        e = np.identity(3) + wy*sin(joint_angles[i]) + np.linalg.matrix_power(wy, 2)*(1-cos(joint_angles[i]))
+        wyv_13 = wyv.reshape(1,3);
+        v_13 = v[i].reshape(1,3);
+        cross = np.cross(wyv_13,v_13).reshape(3,1)
+        t = np.dot((np.identity(3)-e),cross) + np.dot(np.dot(wyv,wyv_13),v[i])*joint_angles[i]
+        s.append(np.concatenate(((np.concatenate((e,t.reshape(3,1)),axis=1)),zeros),axis=0))
+
+    # T is the POE transform matrix
+    T = np.matmul(s[0],np.matmul(s[1],np.matmul(s[2],np.matmul(s[3],M))))
+    # print T
+    # original position in tool frame ([0,0,0] ---homogeneous---> [0,0,0,1])
+    original_pos = np.array([0,0,0,1]);
+    # new_pos is the position in coordinate system centered at the bottom center of the base
+    new_pos = np.matmul(T,original_pos)
+    # world_pos is the position in the world coordinate system
+    world_pos = [new_pos.item(0)+x_off, new_pos.item(1)+y_off, new_pos.item(2), new_pos.item(3)]
 
     pass
 
