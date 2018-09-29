@@ -102,7 +102,7 @@ def FK_pox(joint_angles):
     # linear velocities
     v = [np.array([[0],[0],[0]]),np.array([[0-l1],[0],[0]]),np.array([[0-l1-l2],[0],[0]]),np.array([[0-l1-l2-l3],[0],[0]])]
     s = [];
-    # compute exponential matrices
+    # compute exponential matrices using equations listed in https://en.wikipedia.org/wiki/Product_of_exponentials_formula
     # e: e^(omega,theta); t: t; s: the twist
     # s[0]: twist for the base
     e = np.identity(3) + wz*sin(joint_angles[0]) + np.linalg.matrix_power(wz, 2)*(1-cos(joint_angles[0]))
