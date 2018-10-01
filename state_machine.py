@@ -286,7 +286,7 @@ class StateMachine():
         self.next_state = "idle"
         while (self.kinect.new_click==False): 
             self.status_message = "State: Click n' Grab - waiting for the first mouse click"
-        phi = -np.pi/4
+        phi = -np.pi/2
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
         self.kinect.new_click = False;
@@ -302,7 +302,14 @@ class StateMachine():
         mouse_coor = [x,y,1]
         world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
-        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+        while(true):
+            try:
+                position = IK([world_coord[0], world_coord[1], world_Z, phi])
+            except:
+                phi +=np.pi/18
+            finally:
+                phi = -np.pi/2
+                break        
         print self.rexarm.get_positions()[0:4], position
         self.tp.set_initial_wp()
         self.tp.set_final_wp(position)
@@ -321,7 +328,14 @@ class StateMachine():
         """
         TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
         """
-        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+        while(true):
+            try:
+                position = IK([world_coord[0], world_coord[1], world_Z, phi])
+            except:
+                phi +=np.pi/18
+            finally:
+                phi = -np.pi/2
+                break 
         self.tp.set_initial_wp()
         self.tp.set_final_wp(position)
         self.tp.go()
