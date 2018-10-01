@@ -3,14 +3,25 @@ from math import *
 #expm is a matrix exponential function
 from scipy.linalg import expm
 np.set_printoptions(precision=5)
+<<<<<<< HEAD
+=======
+import matplotlib.pyplot as plt
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
 
 """ 
 TODO: Here is where you will write all of your kinematics functions 
 There are some functions to start with, you may need to implement a few more
 
 """
+input = [[1],[2],[3],[4]]
+
 
 def FK_dh(joint_angles, link):
+<<<<<<< HEAD
+=======
+    if joint_angles == 0:
+        return
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
     th1,joint_angles=np.split(joint_angles,[1])
     th2,joint_angles=np.split(joint_angles,[1])
     th3,th4=np.split(joint_angles,[1])
@@ -79,6 +90,7 @@ def FK_pox(joint_angles):
     note: phi is the euler angle about y in the base frame
 
     """
+<<<<<<< HEAD
     l1 = 118;
     l2 = 99;
     l3 = 99;
@@ -87,6 +99,56 @@ def FK_pox(joint_angles):
     w2 = np.array([[0, 0, 1],[0,0,0],[-1,0,0]]) # rotation in y-axis
 
     pass
+=======
+    l1 = 118;   # lengths of links in mm
+    l2 = 99;
+    l3 = 99;
+    l4 = 143.6;
+    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+    y_off = 292.1
+    # matrix changing tool frame to world frame
+    # set the world frame here centered at the bottom center of the base
+    M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,l1+l2+l3+l4],[0,0,0,1]])
+    # angular velocities
+    wz = np.array([[0, -1, 0],[1,0,0],[0,0,0]]) # rotation in z-axis
+    wzv = np.array([[0],[0],[1]])
+    wy = np.array([[0, 0, 1],[0,0,0],[-1,0,0]]) # rotation in y-axis
+    wyv = np.array([[0],[1],[0]])
+    zeros = np.array([[0,0,0,1]])
+    # linear velocities
+    v = [np.array([[0],[0],[0]]),np.array([[0-l1],[0],[0]]),np.array([[0-l1-l2],[0],[0]]),np.array([[0-l1-l2-l3],[0],[0]])]
+    s = [];
+    # compute exponential matrices using equations listed in https://en.wikipedia.org/wiki/Product_of_exponentials_formula
+    # e: e^(omega,theta); t: t; s: the twist
+    # s[0]: twist for the base
+    e = np.identity(3) + wz*sin(joint_angles[0]) + np.linalg.matrix_power(wz, 2)*(1-cos(joint_angles[0]))
+    wzv_13 = wzv.reshape(1,3);
+    v_13 = v[0].reshape(1,3);
+    cross = np.cross(wzv_13,v_13).reshape(3,1)
+    t = np.dot((np.identity(3)-e),cross) + np.dot(np.dot(wzv,wzv_13),v[0])*joint_angles[0]
+    s.append(np.concatenate(((np.concatenate((e,t.reshape(3,1)),axis=1)),zeros),axis=0))
+
+    # s[1:3]: twist for should, elbow, and wrist
+    for i in range(1,4):
+        e = np.identity(3) + wy*sin(joint_angles[i]) + np.linalg.matrix_power(wy, 2)*(1-cos(joint_angles[i]))
+        wyv_13 = wyv.reshape(1,3);
+        v_13 = v[i].reshape(1,3);
+        cross = np.cross(wyv_13,v_13).reshape(3,1)
+        t = np.dot((np.identity(3)-e),cross) + np.dot(np.dot(wyv,wyv_13),v[i])*joint_angles[i]
+        s.append(np.concatenate(((np.concatenate((e,t.reshape(3,1)),axis=1)),zeros),axis=0))
+
+    # T is the POE transform matrix
+    T = np.matmul(s[0],np.matmul(s[1],np.matmul(s[2],np.matmul(s[3],M))))
+    # print T
+    # original position in tool frame ([0,0,0] ---homogeneous---> [0,0,0,1])
+    original_pos = np.array([0,0,0,1]);
+    # new_pos is the position in coordinate system centered at the bottom center of the base
+    new_pos = np.matmul(T,original_pos)
+    # world_pos is the position in the world coordinate system
+    world_pos = [new_pos.item(0)+x_off, new_pos.item(1)+y_off, new_pos.item(2), new_pos.item(3)]
+    phi = np.pi/2.0 - joint_angles[1] - joint_angles[2] - joint_angles[3];
+    return [world_pos[0], world_pos[1], world_pos[2], phi];
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
 
 def IK(pose):
     
@@ -97,6 +159,12 @@ def IK(pose):
     Xe,pose=np.split(pose,[1])
     Ye,pose=np.split(pose,[1])
     Ze,phi=np.split(pose,[1])
+<<<<<<< HEAD
+=======
+    if phi>0:
+        print 'error: phi must be negative according to convention'
+        return 0
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
     Xe = float(Xe)
     Ye = float(Ye)
     Ze = float(Ze) - d1
@@ -106,7 +174,17 @@ def IK(pose):
     
     Re = (Xe**2 + Ye**2)**0.5
     print 'Re:',Re
+<<<<<<< HEAD
     dR = Re - a4*cos(-phi)
+=======
+    if (Re>341.6 or Ze>118+341.6):
+        print 'error: location out of range'
+        return 0
+    elif Re>a2+a3+a4*cos(-phi):
+        print 'error: euler angle too stiff'
+        return 0
+    dR = Re - a4*cos(phi)
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
     print 'dR:',dR
     dZ = Ze + a4*sin(-phi)
     print 'dZ',dZ
@@ -114,9 +192,13 @@ def IK(pose):
     print 'beta:',beta
     th1 = atan2(Ye,Xe)
     print 'th1:',th1
+<<<<<<< HEAD
     print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
     th3 = acos(1.0)
     #return [0,0,0,0]
+=======
+    print 'dRdZ:' ,(dZ**2+dR**2)**0.5
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
     th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
     print 'th3:',th3
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
@@ -126,6 +208,14 @@ def IK(pose):
     th4 = phi - th2 - th3
     
     print 'IK result:',[th1,th2,th3,th4]
+<<<<<<< HEAD
+=======
+    Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
+    Ys = [0,a2*sin(th2),a2*sin(th2)+a3*sin(th2+th3),a2*sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
+    plt.plot(Xs,Ys,'-o')
+    plt.title('plot for X Y Z phi:' )
+    #plt.show()
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
@@ -142,11 +232,30 @@ def get_euler_angles_from_T(T):
     """
     TODO: implement this function
     return the Euler angles from a T matrix
-    
+
     """
-    pass
+    a13 = T[0,2]
+    a23 = T[1,2]
+    a33 = T[2,2]
+    a31 = T[2,0]
+    a32 = T[2,1]
+    print 'a13-a31',a13,a23,a33,a32,a31
+    theta = round(atan2((1-a33**2)**0.5,a33),3)
+    psi = round(atan2(a13,-a23),3)
+    delta = round(atan2(a31,a32),3)
+    euler = [psi,theta,delta]
+    print 'euler angle Z(psi)X(theta)Z(delta):',euler
+    return euler
+    
 
 def get_pose_from_T(T):
+    X=round(T[0,3],3)
+    Y=round(T[1,3],3)
+    Z=round(T[2,3],3)
+    phi = round(get_euler_angles_from_T(T)[2],3)
+    pose = [X,Y,Z,phi]
+    print 'pose(X Y Z phi):',pose
+    return pose
     """
     TODO: implement this function
     return the joint pose from a T matrix
@@ -164,3 +273,7 @@ def to_s_matrix(w,v):
     Find the [s] matrix for the POX method e^([s]*theta)
     """
     pass
+
+#test code
+get_euler_angles_from_T(FK_dh(IK([0,100,100,-pi/2]),4))
+get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))

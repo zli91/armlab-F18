@@ -118,6 +118,7 @@ class Gui(QMainWindow):
         self.ui.btn_exec.clicked.connect(partial(self.sm.set_next_state, "execute"))
         self.ui.btnUser1.setText("Calibrate")
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_next_state, "calibrate"))
+<<<<<<< HEAD
         self.ui.btnUser2.setText("Record Waypoints")
         self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
         self.ui.btnUser3.setText("Play")
@@ -126,6 +127,29 @@ class Gui(QMainWindow):
         self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "blockDetectionStart"))
         self.ui.btnUser5.setText("Block Detection End")
         self.ui.btnUser5.clicked.connect(partial(self.sm.set_next_state, "blockDetectionEnd"))
+=======
+        self.ui.btnUser2.setText("Teach and Repeat")
+        self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "teachNRepeat"))
+        self.ui.btnUser3.setText("Record Waypoints")
+        self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
+        self.ui.btnUser4.setText("Play")
+        self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "play"))
+        self.ui.btnUser5.setText("Block Detection")
+        self.ui.btnUser5.clicked.connect(partial(self.sm.set_next_state, "blockDetection"))
+        self.ui.btnUser6.setText("Click and Grab")
+        self.ui.btnUser6.clicked.connect(partial(self.sm.set_next_state, "clickNGrab"))
+        self.ui.btnUser7.setText("Pick n' Place")
+        self.ui.btnUser7.clicked.connect(partial(self.sm.set_next_state, "pickNPlace"))
+        self.ui.btnUser8.setText("Pick n' Stack")
+        self.ui.btnUser8.clicked.connect(partial(self.sm.set_next_state, "pickNStack"))
+        self.ui.btnUser9.setText("Line 'em Up!")
+        self.ui.btnUser9.clicked.connect(partial(self.sm.set_next_state, "lineUp"))
+        self.ui.btnUser10.setText("Stack 'em High!")
+        self.ui.btnUser10.clicked.connect(partial(self.sm.set_next_state, "stackHigh"))
+        self.ui.btnUser10.setText("Pyramid Builder!")
+        self.ui.btnUser10.clicked.connect(partial(self.sm.set_next_state, "buildPyramid"))
+
+>>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
         self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
@@ -229,7 +253,7 @@ class Gui(QMainWindow):
     def trackMouse(self):
         """ 
         Mouse position presentation in GUI
-        TODO: after implementing workspace calibration 
+        After implementing workspace calibration 
         display the world coordinates the mouse points to 
         in the RGB video image.
         """
