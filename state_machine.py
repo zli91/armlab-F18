@@ -237,13 +237,13 @@ class StateMachine():
             self.status_message = "State: Click n' Grab - waiting for the first mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
+        self.kinect.new_click = False;
         if (self.kinect.kinectCalibrated)
             z = self.kinect.currentDepthFrame[y][x]
         else 
             self.status_message = "State: Click and Grab - error: camera calibration not completed"
             print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
             return
-        self.kinect.new_click = False;
         """
         TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
         """
