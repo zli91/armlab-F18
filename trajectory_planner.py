@@ -18,7 +18,7 @@ class TrajectoryPlanner():
         self.initial_wp = [0.0]*self.num_joints
         self.final_wp = [0.0]*self.num_joints 
         self.dt = 0.05 # command rate
-        self.wp = [[0.0, 0.0, 0.0, 0.0]];
+        self.wp = [];
         self.T = 0;
         self.time_factor = 8 # determines the total time motor takes from one point to the other
         self.look_ahead = self.time_factor # determines how much time to look ahead when planning
@@ -28,6 +28,10 @@ class TrajectoryPlanner():
 
     def set_final_wp(self, waypoint):
         pass
+
+    def add_wp(self, joints):
+        self.wp.append(joint[:])
+        print(self.wp)
 
     def set_wp(self):
         temp = self.rexarm.get_positions()
@@ -166,7 +170,7 @@ class TrajectoryPlanner():
                 for i in range(len(self.wp)):
                     writeResult.writerow(self.wp[i])
 
-            self.wp = [[0.0, 0.0, 0.0, 0.0]]
+            self.wp = []
 
     def execute_without_path_smoothing(self):
         time_begin = float(time.time())

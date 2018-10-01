@@ -130,8 +130,8 @@ def FK_pox(joint_angles):
     new_pos = np.matmul(T,original_pos)
     # world_pos is the position in the world coordinate system
     world_pos = [new_pos.item(0)+x_off, new_pos.item(1)+y_off, new_pos.item(2), new_pos.item(3)]
-
-    pass
+    phi = np.pi/2.0 - joint_angles[1] - joint_angles[2] - joint_angles[3];
+    return [world_pos[0], world_pos[1], world_pos[2], phi];
 
 def IK(pose):
     

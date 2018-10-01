@@ -118,12 +118,16 @@ class Gui(QMainWindow):
         self.ui.btn_exec.clicked.connect(partial(self.sm.set_next_state, "execute"))
         self.ui.btnUser1.setText("Calibrate")
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_next_state, "calibrate"))
-        self.ui.btnUser2.setText("Record Waypoints")
-        self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
-        self.ui.btnUser3.setText("Play")
-        self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "play"))
-        self.ui.btnUser4.setText("Block Detection")
-        self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "blockDetection"))
+        self.ui.btnUser2.setText("Teach and Repeat")
+        self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "teachNRepeat"))
+        self.ui.btnUser3.setText("Record Waypoints")
+        self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
+        self.ui.btnUser4.setText("Play")
+        self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "play"))
+        self.ui.btnUser5.setText("Block Detection")
+        self.ui.btnUser5.clicked.connect(partial(self.sm.set_next_state, "blockDetection"))
+        self.ui.btnUser6.setText("Click and Grab")
+        self.ui.btnUser6.clicked.connect(partial(self.sm.set_next_state, "clickNGrab"))
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
         self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
@@ -227,7 +231,7 @@ class Gui(QMainWindow):
     def trackMouse(self):
         """ 
         Mouse position presentation in GUI
-        TODO: after implementing workspace calibration 
+        After implementing workspace calibration 
         display the world coordinates the mouse points to 
         in the RGB video image.
         """
