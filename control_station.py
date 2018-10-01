@@ -101,12 +101,12 @@ class Gui(QMainWindow):
         shld = DXL_MX(port_num, 1)
         elbw = DXL_MX(port_num, 2)
         wrst = DXL_AX(port_num, 3)
-        #wrst2 = DXL_XL(port_num, 4)
-        #grip = DXL_XL(port_num, 5)
+        wrst2 = DXL_XL(port_num, 4)
+        grip = DXL_XL(port_num, 5)
 
         """Objects Using Other Classes"""
         self.kinect = Kinect()
-        self.rexarm = Rexarm((base,shld,elbw,wrst),0)
+        self.rexarm = Rexarm((base,shld,elbw,wrst,wrst2,grip),0)
         self.tp = TrajectoryPlanner(self.rexarm)
         self.sm = StateMachine(self.rexarm, self.tp, self.kinect)
     
@@ -226,6 +226,8 @@ class Gui(QMainWindow):
         self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
         self.ui.rdoutElbow.setText(str(self.ui.sldrElbow.value()))
         self.ui.rdoutWrist.setText(str(self.ui.sldrWrist.value()))
+        # self.ui.sldrGrip1.setText(str(self.ui.sldrGrip1.value()))
+        # self.ui.sldrGrip2.setText(str(self.ui.sldrGrip2.value()))
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.ui.rdoutSpeed.setText(str(self.ui.sldrSpeed.value()) + "%")
         self.rexarm.set_torque_limits([self.ui.sldrMaxTorque.value()/100.0]*self.rexarm.num_joints, update_now = False)
@@ -233,7 +235,9 @@ class Gui(QMainWindow):
         joint_positions = np.array([self.ui.sldrBase.value()*D2R, 
                            self.ui.sldrShoulder.value()*D2R,
                            self.ui.sldrElbow.value()*D2R,
-                           self.ui.sldrWrist.value()*D2R])
+                           self.ui.sldrWrist.value()*D2R,
+                           self.ui.sldrGrip1.value()*D2R,
+                           self.ui.sldrGrip2.value()*D2R])
         self.rexarm.set_positions(joint_positions, update_now = False)
 
     def directControlChk(self, state):

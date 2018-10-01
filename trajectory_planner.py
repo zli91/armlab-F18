@@ -160,12 +160,9 @@ class TrajectoryPlanner():
         # print([max_speed]*len(self.rexarm.joints))
         # self.rexarm.set_speeds(self, [max_speed]*4)
         if len(self.wp)!= 0:
-            cur_pos = self.rexarm.get_positions()[:]
-            self.wp.insert(0,cur_pos);
-            print self.wp
-            self.initial_wp = self.wp[0];
+            # self.initial_wp = self.wp[0];
             while (len(self.wp)!=0):
-                self.final_wp = self.wp.pop();
+                self.final_wp = self.wp.pop(0);
                 self.go(self.initial_wp, self.final_wp, self.look_ahead);
                 self.initial_wp = self.final_wp;
 

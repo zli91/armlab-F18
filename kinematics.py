@@ -11,7 +11,8 @@ There are some functions to start with, you may need to implement a few more
 
 """
 input = [[1],[2],[3],[4]]
-
+x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+y_off = 301.5
 
 def FK_dh(joint_angles, link):
     if joint_angles == 0:
@@ -20,12 +21,11 @@ def FK_dh(joint_angles, link):
     th2,joint_angles=np.split(joint_angles,[1])
     th3,th4=np.split(joint_angles,[1])
     th1 = float(th1)
-    th2 = float(th2)
+    th2 = float(th2)+pi/2
     th3 = float(th3)
     th4 = float(th4)
-    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
-    y_off = 292.1
-    offset_mat = np.array([[0,0,0,x_off],[0,0,0,y_off],[0,0,0,0],[0,0,0,0]])
+
+    offset_mat = np.array([[0,0,0,y_off],[0,0,0,x_off],[0,0,0,0],[0,0,0,0]])
     T1 = [
          [ cos(th1),   0,      sin(th1),     0],
          [ sin(th1),   0, -1.0*cos(th1),     0],
@@ -91,8 +91,6 @@ def FK_pox(joint_angles):
     l2 = 99;
     l3 = 99;
     l4 = 143.6;
-    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
-    y_off = 292.1
     # matrix changing tool frame to world frame
     # set the world frame here centered at the bottom center of the base
     M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,l1+l2+l3+l4],[0,0,0,1]])
@@ -132,13 +130,14 @@ def FK_pox(joint_angles):
     # new_pos is the position in coordinate system centered at the bottom center of the base
     new_pos = np.matmul(T,original_pos)
     # world_pos is the position in the world coordinate system
+    rotation = [[cos(pi/2), -sin(pi/2), 0, 0],[sin(pi/2), cos(pi/2), 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    new_pos = np.matmul(rotation,new_pos)
     world_pos = [new_pos.item(0)+x_off, new_pos.item(1)+y_off, new_pos.item(2), new_pos.item(3)]
+
     phi = np.pi/2.0 - joint_angles[1] - joint_angles[2] - joint_angles[3];
     return [world_pos[0], world_pos[1], world_pos[2], phi];
 
 def IK(pose):
-    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
-    y_off = 292.1
     d1 = 118
     a2 = 99
     a3 = 99
@@ -228,7 +227,7 @@ def get_pose_from_T(T):
     Y=round(T[1,3],3)
     Z=round(T[2,3],3)
     phi = round(get_euler_angles_from_T(T)[2],3)
-    pose = [X,Y,Z,phi]
+    pose = [Y,603.25-X,Z,phi]
     #print 'pose(X Y Z phi):',pose
     return pose
     """

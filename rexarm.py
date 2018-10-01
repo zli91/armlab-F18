@@ -28,7 +28,9 @@ class Rexarm():
                             [-180, 179.99],
                             [-34, 214],
                             [-90, 120],
-                            [-125, 125]], dtype=np.float)*D2R
+                            [-125, 125],
+                            [-90, 90],
+                            [-90, 90]], dtype=np.float)*D2R
                         # S[-34, 214]
                         # E[-90, 120]
                         # W[-125 125]
@@ -123,6 +125,7 @@ class Rexarm():
     def get_positions(self):
         for i,joint in enumerate(self.joints):
             self.joint_angles_fb[i] = joint.get_position()
+        print self.joint_angles_fb
         return self.joint_angles_fb
 
     def get_speeds(self):
@@ -171,7 +174,7 @@ class Rexarm():
 
 
     def get_wrist_pose(self):
-        print FK_pox(joint_angles_fb[:]);
-        return FK_pox(joint_angles_fb[:]);
-        # print FK_pox(self.get_positions()[:]);
-        # return FK_pox(self.get_positions()[:]);
+        # print get_pose_from_T(FK_dh(self.joint_angles_fb[:],4));
+        return get_pose_from_T(FK_dh(self.joint_angles_fb[:],4));
+        # print FK_pox(self.joint_angles_fb[:]);
+        # return FK_pox(self.joint_angles_fb[:]);

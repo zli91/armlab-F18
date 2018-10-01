@@ -181,7 +181,7 @@ class StateMachine():
     def play(self):
         self.status_message = "State: Play - going to the waypoints in collect order"
         self.next_state = "idle"
-        self.rexarm.set_torque_limits([0.4]*self.rexarm.num_joints)
+        self.rexarm.set_torque_limits([0.5]*self.rexarm.num_joints)
         self.rexarm.pause(1)
         self.tp.execute_plan()
         
@@ -247,10 +247,6 @@ class StateMachine():
         self.status_message = "State: Block Detection - End"
         self.next_state = "idle"
         self.kinect.blockDetected = False
-
-
-
-        
 
     # where you can click on a block in the video and the arm will move to grasping location, 
     # then a second click will tell the arm to move to a drop off location. 
