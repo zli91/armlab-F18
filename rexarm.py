@@ -171,5 +171,5 @@ class Rexarm():
 
 
     def get_wrist_pose(self):
-        """TODO"""
-        return [0,0,0,0]
+        print FK_pox(self.get_positions()[:]);
+        return FK_pox(self.get_positions()[:]);

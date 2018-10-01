@@ -20,7 +20,7 @@ class TrajectoryPlanner():
         self.dt = 0.05 # command rate
         self.wp = [];
         self.T = 0;
-        self.time_factor = 8 # determines the total time motor takes from one point to the other
+        self.time_factor = 10 # determines the total time motor takes from one point to the other
         self.look_ahead = self.time_factor # determines how much time to look ahead when planning
 
     def set_initial_wp(self):
@@ -34,8 +34,8 @@ class TrajectoryPlanner():
         print(self.wp)
 
     def set_wp(self):
-        temp = self.rexarm.get_positions()
-        self.wp.append(temp[:])
+        temp = self.rexarm.get_positions()[:]
+        self.wp.append(temp)
         print(self.wp);
 
     def go(self, initial_wp, final_wp, look_ahead, max_speed = 2.5):
@@ -159,7 +159,9 @@ class TrajectoryPlanner():
         # print([max_speed]*len(self.rexarm.joints))
         # self.rexarm.set_speeds(self, [max_speed]*4)
         if len(self.wp)!= 0:
-            self.rexarm.set_positions([0, 0, 0, 0])
+            cur_pos = self.rexarm.get_positions()[:]
+            self.wp.insert(0,cur_pos);
+            print self.wp
             for i in range(len(self.wp)-1):
                 self.initial_wp = self.wp[i];
                 self.final_wp = self.wp[i+1];
