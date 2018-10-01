@@ -156,7 +156,7 @@ def IK(pose):
     #parameters:
     
     Re = (Xe**2 + Ye**2)**0.5
-    print 'Re:',Re
+    #print 'Re:',Re
     dR = Re - a4*cos(-phi)
     if (Re>341.6 or Ze>118+341.6):
         print 'error: location out of range'
@@ -165,9 +165,9 @@ def IK(pose):
         print 'error: euler angle too stiff'
         return 0
     dR = Re - a4*cos(phi)
-   # print 'dR:',dR
+    #print 'dR:',dR
     dZ = Ze + a4*sin(-phi)
-   # print 'dZ',dZ
+    #print 'dZ',dZ
     beta = atan2(dZ,dR)
     #print 'beta:',beta
     th1 = atan2(Ye,Xe)
@@ -180,9 +180,10 @@ def IK(pose):
     #print 'th3:',th3
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
     #print 'alpha:',alpha
-    th2 = beta+alpha-pi/2
+    th2 = beta+alpha
     #print 'th2:',th2
-    th4 = phi - th2 - pi/2 - th3
+    th4 = phi - th2 - th3
+    #print 'th4:',th4
     
     #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
@@ -190,6 +191,9 @@ def IK(pose):
     plt.plot(Xs,Ys,'-o')
     plt.title('plot for X Y Z phi:' )
     plt.show()
+    th2 = pi/2 - th2
+    th3 = -th3
+    th4 = -th4
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
@@ -250,4 +254,4 @@ def to_s_matrix(w,v):
 #test code
 # get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
 # get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
-print IK([x_off-100,y_off+100,100,-pi/4]);
+print IK([x_off,y_off+200,118,-pi/4]);
