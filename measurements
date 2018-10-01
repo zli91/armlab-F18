@@ -1,3 +1,6 @@
 measurements:
 y_off = 301.5 mm
 x_off = 304 mm
+
+grip1: -2.61799, 2.61799
+grip2: 0 1.558

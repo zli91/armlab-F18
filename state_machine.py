@@ -3,6 +3,7 @@ import numpy as np
 from rexarm import Rexarm as rexarm
 from trajectory_planner import TrajectoryPlanner as tp
 from kinect import Kinect as kinect
+from kinematics import *
 import cv2
 import freenect
 
@@ -143,7 +144,16 @@ class StateMachine():
     def idle(self):
         self.status_message = "State: Idle - Waiting for input"
         self.current_state = "idle"
+        # self.rexarm.set_torque_limits([0.0]*self.rexarm.num_joints)
         self.rexarm.get_feedback()
+        # cur = time.time()
+        # while (True):
+        #     if (time.time() - cur > 3):
+        #         cur = time.time()
+        #         self.rexarm.get_feedback()
+        #         print self.rexarm.get_positions();
+
+        
 
     def estop(self):
         self.status_message = "EMERGENCY STOP - Check Rexarm and restart program"
@@ -256,6 +266,7 @@ class StateMachine():
         self.next_state = "idle"
         while (self.kinect.new_click==False): 
             self.status_message = "State: Click n' Grab - waiting for the first mouse click"
+        phi = -np.pi/4
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
         self.kinect.new_click = False;
@@ -268,22 +279,34 @@ class StateMachine():
         """
         TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
         """
-        position = [1.2, 1.0, 0.9, 0.7]
-        self.tp.add_wp(position)
-        self.tp.execute_plan()
+        mouse_coor = [x,y,1]
+        world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
+        world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+        print self.rexarm.get_positions()[0:4], position
+        self.tp.set_initial_wp()
+        self.tp.set_final_wp(position)
+        self.tp.go(self.tp.initial_wp, self.tp.)
+
         # wait for mouse click
         while (self.kinect.new_click==False):
             self.status_message = "State: Click and Grab - waiting for the second mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
+        mouse_coor = [x,y,1]
+        world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         z = self.kinect.currentDepthFrame[y][x]
+        world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
         self.kinect.new_click = False;
         """
         TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
         """
-        position = [-1.0, -0.8, -1.0, -1.0]
-        self.tp.add_wp(position)
-        self.tp.execute_plan()
+        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+        self.tp.set_initial_wp()
+        self.tp.set_final_wp(position)
+        self.tp.go()
+        # self.tp.add_wp(position)
+        # self.tp.execute_plan()
 
     def pickNPlace(self):
         self.current_state = "pickNPlace"

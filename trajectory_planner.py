@@ -14,9 +14,9 @@ class TrajectoryPlanner():
     def __init__(self, rexarm):
         self.idle = True
         self.rexarm = rexarm
-        self.num_joints = rexarm.num_joints
-        self.initial_wp = [0.0]*self.num_joints
-        self.final_wp = [0.0]*self.num_joints 
+        self.num_joints = 4
+        self.initial_wp = [0.0]*4
+        self.final_wp = [0.0]*4
         self.dt = 0.05 # command rate
         self.wp = [];
         self.T = 0;
@@ -24,21 +24,21 @@ class TrajectoryPlanner():
         self.look_ahead = self.time_factor # determines how much time to look ahead when planning
 
     def set_initial_wp(self):
-        pass
+        self.initial_wp = self.rexarm.get_positions()[0:4]
 
     def set_final_wp(self, waypoint):
-        pass
+        self.final_wp = waypoint;
 
     def add_wp(self, joints):
         self.wp.append(joint[:])
         print(self.wp)
 
     def set_wp(self):
-        temp = self.rexarm.get_positions()[:]
+        temp = self.rexarm.get_positions()[0:4]
         self.wp.append(temp)
         print(self.wp);
 
-    def go(self, initial_wp, final_wp, look_ahead, max_speed = 2.5):
+    def go(self, max_speed = 2.5):
         qt0 = self.initial_wp
         qtf = self.final_wp
         print ("calculating time needed")
@@ -58,19 +58,23 @@ class TrajectoryPlanner():
 
         # initialize speed vector and position
         for k in range(len(qt0)):
-            vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*look_ahead/1000 + 3*coeffs[k][3]*look_ahead/1000*look_ahead/1000)
+            vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*self.look_ahead/1000 + 3*coeffs[k][3]*self.look_ahead/1000*self.look_ahead/1000)
             # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
-        print vt
+        vt.append(0)
+        vt.append(0)
         self.rexarm.set_speeds(vt)
         # start moving
-        self.rexarm.pause(look_ahead/1000)
+        self.rexarm.pause(self.look_ahead/1000)
         resultFile = open("with_path_smoothing.csv","wb")
         # resultFileVel = open("vel_with_path_smoothing.csv","wb")
         writeResult = csv.writer(resultFile, delimiter=',')
         # writeResultVel = csv.writer(resultFileVel, delimiter=',')
         
         time_begin = time.time();
-        self.rexarm.set_positions(final_wp)
+        pos = self.final_wp
+        pos.append(0)
+        pos.append(0)
+        self.rexarm.set_positions(pos)
         # while (time.time()-time_begin<self.T):
         for j in range(num_intervals-1):
             # self.rexarm.set_positions(current_pos)
@@ -82,7 +86,8 @@ class TrajectoryPlanner():
                 print coeffs[k][2], coeffs[k][3]
                 vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)
                 # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
-            print vt
+            vt.append(0)
+            vt.append(0)
             self.rexarm.set_speeds(vt)
             # time.sleep(0.05)
             self.rexarm.pause(time_interval)
@@ -125,7 +130,7 @@ class TrajectoryPlanner():
         print T
         cubic_matrix = [[1,0,0,0],[0,1,0,0],[1,T,T*T,T*T*T], [0,1,2*T,3*T*T]]
         print cubic_matrix
-        for i in range(len(initial_wp)):
+        for i in range(len(self.initial_wp)):
             temp = [];
             # time = float(T)
             conditions = [self.initial_wp[i], 0, self.final_wp[i], 0]
@@ -164,7 +169,7 @@ class TrajectoryPlanner():
             while (len(self.wp)!=0):
                 self.final_wp = self.wp.pop(0);
                 self.go(self.initial_wp, self.final_wp, self.look_ahead);
-                self.initial_wp = self.final_wp;
+                self.initial_wp = self.get_positions[0:4];
 
             with open("data.csv", 'wb') as resultFile:
                 writeResult = csv.writer(resultFile, delimiter=',')

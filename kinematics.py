@@ -142,14 +142,14 @@ def IK(pose):
     a2 = 99
     a3 = 99
     a4 = 143.6
-    Xe,pose=np.split(pose,[1])
-    Ye,pose=np.split(pose,[1])
+    Xw,pose=np.split(pose,[1])
+    Yw,pose=np.split(pose,[1])
     Ze,phi=np.split(pose,[1])
     if phi>0:
         print 'error: phi must be negative according to convention'
         return 0
-    Xe = float(Xe)-x_off
-    Ye = float(Ye)-y_off
+    Ye = -(float(Xw)-x_off)
+    Xe = float(Yw)-y_off
     Ze = float(Ze) - d1
     phi = float(phi)
     
@@ -180,9 +180,9 @@ def IK(pose):
     #print 'th3:',th3
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
     #print 'alpha:',alpha
-    th2 = beta+alpha
+    th2 = beta+alpha-pi/2
     #print 'th2:',th2
-    th4 = phi - th2 - th3
+    th4 = phi - th2 - pi/2 - th3
     
     #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
@@ -199,7 +199,6 @@ def IK(pose):
     return the required joint angles
 
     """
-    pass
 
 
 def get_euler_angles_from_T(T):
@@ -249,6 +248,6 @@ def to_s_matrix(w,v):
     pass
 
 #test code
-get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
-#get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
-#IK([304,292+100,100,-pi/4])
+# get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
+# get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
+print IK([x_off-100,y_off+100,100,-pi/4]);

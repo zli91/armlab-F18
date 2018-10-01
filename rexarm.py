@@ -26,11 +26,11 @@ class Rexarm():
         """TODO: Find the physical angle limits of the Rexarm"""
         self.angle_limits = np.array([
                             [-180, 179.99],
-                            [-34, 214],
+                            [-124, 124],
                             [-90, 120],
                             [-125, 125],
-                            [-90, 90],
-                            [-90, 90]], dtype=np.float)*D2R
+                            [-150, 150],
+                            [-1, 90]], dtype=np.float)*D2R
                         # S[-34, 214]
                         # E[-90, 120]
                         # W[-125 125]
@@ -125,7 +125,6 @@ class Rexarm():
     def get_positions(self):
         for i,joint in enumerate(self.joints):
             self.joint_angles_fb[i] = joint.get_position()
-        print self.joint_angles_fb
         return self.joint_angles_fb
 
     def get_speeds(self):
@@ -175,6 +174,6 @@ class Rexarm():
 
     def get_wrist_pose(self):
         # print get_pose_from_T(FK_dh(self.joint_angles_fb[:],4));
-        return get_pose_from_T(FK_dh(self.joint_angles_fb[:],4));
+        return get_pose_from_T(FK_dh(self.joint_angles_fb[0:4],4));
         # print FK_pox(self.joint_angles_fb[:]);
         # return FK_pox(self.joint_angles_fb[:]);

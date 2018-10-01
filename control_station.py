@@ -148,6 +148,8 @@ class Gui(QMainWindow):
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
         self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
         self.ui.sldrWrist.valueChanged.connect(self.sliderChange)
+        self.ui.sldrGrip1.valueChanged.connect(self.sliderChange)
+        self.ui.sldrGrip2.valueChanged.connect(self.sliderChange)
         self.ui.sldrMaxTorque.valueChanged.connect(self.sliderChange)
         self.ui.sldrSpeed.valueChanged.connect(self.sliderChange)
         self.ui.chk_directcontrol.stateChanged.connect(self.directControlChk)
