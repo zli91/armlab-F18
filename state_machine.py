@@ -50,8 +50,18 @@ class StateMachine():
                 self.teachNRepeat()
             if(self.next_state == "blockDetection"):
                 self.blockDetection()
-            if (self.next_state == "clickNGrab")
+            if (self.next_state == "clickNGrab"):
                 self.clickNGrab()
+            if (self.next_state == "pickNPlace"):
+                self.pickNPlace()
+            if (self.next_state == "pickNStack"):
+                self.pickNStack()
+            if (self.next_state == "lineUp"):
+                self.lineUp()
+            if (self.next_state == "stackHigh"):
+                self.stackHigh()
+            if (self.next_state == "buildPyramid"):
+                self.buildPyramid()
 
         if(self.current_state == "estop"):
             self.next_state = "estop"
@@ -65,17 +75,19 @@ class StateMachine():
             if(self.next_state == "idle"):
                 self.idle()
             if(self.next_state == "estop"):
-                self.estop()  
-
-        if(self.current_state == "recordWaypoint"):
-            if(self.next_state == "idle"):
-                self.idle()
-
-        if(self.current_state == "play"):
-            if(self.next_state == "idle"):
-                self.idle()
+                self.estop()
 
         if(self.current_state == "blockDetection"):
+            if(self.next_state == "idle"):
+                self.idle()
+
+        if (self.current_state == "teachNRepeat"):
+            if(self.next_state == "teachNRepeat"):
+                self.teachNRepeat()
+            if(self.next_state == "recordWaypoint"):
+                self.recordWaypoint()
+            if(self.next_state == "play"):
+                self.play()
             if(self.next_state == "idle"):
                 self.idle()
 
@@ -83,11 +95,26 @@ class StateMachine():
             if(self.next_state == "idle"):
                 self.idle()
 
-        if (self.current_state == "teachNRepeat"):
-            if(self.next_state == "recordWaypoint"):
-                self.recordWaypoint()
-            if(self.next_state == "play"):
-                self.play()
+        if(self.current_state == "pickNPlace"):
+            if(self.next_state == "idle"):
+                self.idle()
+
+        if(self.current_state == "pickNStack"):
+            if(self.next_state == "idle"):
+                self.idle()
+
+        if(self.current_state == "lineUp"):
+            if(self.next_state == "idle"):
+                self.idle()
+
+        if(self.current_state == "stackHigh"):
+            if(self.next_state == "idle"):
+                self.idle()
+
+        if(self.current_state == "buildPyramid"):
+            if(self.next_state == "idle"):
+                self.idle()
+
 
     """Functions run for each state"""
 
@@ -124,21 +151,20 @@ class StateMachine():
     # teachNRepeat state does not end until button click
     def teachNRepeat(self):
         # set the torque to 0
-        self.status_message = "State: teachNRepeat - torque set to 0, click \"Record Waypoint\" or \"play\""
+        self.current_state = "teachNRepeat"
+        self.status_message = "State: Teach n' Repeat - torque set to 0, click \"Record Waypoint\" or \"play\""
         self.rexarm.set_torque_limits([0.0]*self.rexarm.num_joints)
         # next state is either recordWaypoint or play depending on button click
 
     # recordWaypoint returns to teachNRepeat
     def recordWaypoint(self):
         self.status_message = "State: Record Waypoint"
-        self.current_state = "recordWaypoint"
         self.next_state = "teachNRepeat"
         self.tp.set_wp()
 
     # play exits teachNRepeat
     def play(self):
         self.status_message = "State: Play - going to the waypoints in collect order"
-        self.current_state = "play"
         self.next_state = "idle"
         self.rexarm.set_torque_limits([1.0]*self.rexarm.num_joints)
         self.tp.execute_plan()
@@ -205,8 +231,10 @@ class StateMachine():
     # then a second click will tell the arm to move to a drop off location. 
     def clickNGrab(self):
         # wait for mouse click
+        self.current_state = "clickNGrab"
+        self.next_state = "idle"
         while (!self.kinect.new_click): 
-            self.status_message = "State: Click and Grab - waiting for the first mouse click"
+            self.status_message = "State: Click n' Grab - waiting for the first mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
         if (self.kinect.kinectCalibrated)
@@ -236,5 +264,32 @@ class StateMachine():
         self.tp.add_wp(position)
         self.tp.execute_plan()
 
+    def pickNPlace(self):
+        self.current_state = "pickNPlace"
+        self.next_state = "idle"
+        self.status_message = "State: Pick n' Place"
+        self.rexarm.pause(2)
 
+    def pickNStack(self):
+        self.current_state = "pickNStack"
+        self.next_state = "idle"
+        self.status_message = "State: Pick n' Stack"
+        self.rexarm.pause(2)
 
+    def lineUp(self):
+        self.current_state = "lineUp"
+        self.next_state = "idle"
+        self.status_message = "State: Line 'em UP"
+        self.rexarm.pause(2)
+
+    def stackHigh(self):
+        self.current_state = "stackHigh"
+        self.next_state = "idle"
+        self.status_message = "State: Stack 'em High"
+        self.rexarm.pause(2)
+
+    def buildPyramid(self):
+        self.current_state = "buildPyramid"
+        self.next_state = "idle"
+        self.status_message = "State: Pyramid Builder"
+        self.rexarm.pause(2)
