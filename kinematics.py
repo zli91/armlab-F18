@@ -86,10 +86,7 @@ def FK_pox(joint_angles):
     note: phi is the euler angle about y in the base frame
 
     """
-<<<<<<< HEAD
-=======
     #print joint_angles
->>>>>>> 5edaed7290b8e5fee8ba10fe8230fd554dea3cf7
     l1 = 118;   # lengths of links in mm
     l2 = 99;
     l3 = 99;
