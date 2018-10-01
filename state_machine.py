@@ -52,6 +52,8 @@ class StateMachine():
                 self.play()
             if(self.next_state == "blockDetectionStart"):
                 self.blockDetectionStart()
+            if(self.next_state == "blockMessage"):
+                self.blockMessage()
             if(self.next_state == "blockDetectionEnd"):
                 self.blockDetectionEnd()
             if(self.next_state == "teachNRepeat"):
@@ -85,7 +87,17 @@ class StateMachine():
             if(self.next_state == "estop"):
                 self.estop()
 
-        if(self.current_state == "blockDetection"):
+        if(self.current_state == "blockDetectionStart"):
+            if(self.next_state == "blockDetectionStart"):
+                self.blockDetectionStart()
+            if(self.next_state == "blockMessage"):
+                self.blockMessage()
+
+        if(self.current_state == "blockMessage"):
+            if(self.next_state == "blockDetectionStart"):
+                self.blockDetectionStart()
+
+        if(self.current_state == "blockDetectionEnd"):
             if(self.next_state == "idle"):
                 self.idle()
 
@@ -237,9 +249,17 @@ class StateMachine():
         self.status_message = "State: Block Detection - Start"
         self.next_state = "blockDetectionStart"
         # self.kinect.processVideoFrame()
-        self.kinect.detectBlocksInDepthImage()
-        self.kinect.blockDetector()
+        # self.kinect.detectBlocksInDepthImage()
+        # self.kinect.blockDetector()
         self.kinect.blockDetected = True
+
+    def blockMessage(self):
+        self.current_state = "blockMessage"
+        self.status_message = "State: Block Detection - Message"
+        self.next_state = "blockDetectionStart"
+        self.kinect.blockMessage = True
+        time.sleep(0.01)
+        self.kinect.blockMessage = False
 
 
     def blockDetectionEnd(self):

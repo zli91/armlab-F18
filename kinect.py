@@ -27,6 +27,8 @@ class Kinect():
 
         self.blockDetected = False
 
+        self.blockMessage = False
+
         """ Extra arrays for colormaping the depth image"""
         self.DepthHSV = np.zeros((480,640,3)).astype(np.uint8)
         self.DepthCM=np.array([])
@@ -49,7 +51,7 @@ class Kinect():
 
     def processVideoFrame(self):
         self.detectBlocksInDepthImage()
-        blockDetector()
+        self.blockDetector()
         # draw contours
         cv2.drawContours(self.currentVideoFrame,self.rectVertex,-1,(0,255,0),3)
 
@@ -190,11 +192,11 @@ class Kinect():
         hsvBoundaries = [ # h,s,v
             ([20, 30, 101], [40, 255, 255]), # yellow
             ([0, 30, 101], [15, 255, 255]), # orange
-            ([160, 110, 230], [180, 150, 255]), # pink
-            ([0, 0, 80], [255, 255, 100]), # black
+            ([160, 90, 230], [180, 170, 255]), # pink
+            ([0, 0, 70], [255, 255, 100]), # black
             ([160, 165, 140], [180, 255, 200]), # red
-            ([120, 30, 140], [155, 100, 210]), # purple
-            ([45, 60, 130],[80, 100, 160]), # green
+            ([120, 20, 130], [155, 130, 220]), # purple
+            ([45, 50, 120],[80, 120, 170]), # green
             ([105, 130, 160], [125, 170, 200]) # blue
             ]
 
@@ -209,6 +211,7 @@ class Kinect():
         self.cubeContours = []
         self.rectVertex = []
         self.cubeOrient = []
+        self.vertexCoordInWorld = []
         
         for i in range(len(self.contours)):        
             # find center of mass
@@ -218,7 +221,7 @@ class Kinect():
 
             # # find if center is in world frame
             centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])
-            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (240 < centerCoordInWorld[0] < 355 and 270 < centerCoordInWorld[1] < 370):
+            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] < 375 and 250 < centerCoordInWorld[1] < 390):
                 continue
 
             # color detection points array
@@ -268,16 +271,20 @@ class Kinect():
                     # vertex coords in world frame
                     vertexCoord1 = np.matmul(self.convert_to_world, [box[0][0],box[0][1],1])
                     vertexCoord2 = np.matmul(self.convert_to_world, [box[1][0],box[1][1],1])
-                    vertexCoordInWorld.append([vertexCoord1,vertexCoord2])
+                    # self.vertexCoordInWorld.append([vertexCoord1,vertexCoord2])
                     # record orientation in world frame
-                    angle = atan((vertexCoordInWorld[1][1]-vertexCoordInWorld[0][1])/(vertexCoordInWorld[1][0]-vertexCoordInWorld[0][0]))
+                    angle = np.arctan((vertexCoord2[1]-vertexCoord1[1])/(vertexCoord2[0]-vertexCoord1[0]))
                     self.cubeOrient.append(angle)
 
                 else:
                     continue
-        print self.cubeCenter
-        print self.cubeOrient
-        print self.detectedCubeColor
+
+            if(self.blockMessage):
+                print self.cubeCenter
+                print self.cubeOrient
+                print self.detectedCubeColor
+            
+
         return None
 
 
