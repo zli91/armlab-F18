@@ -63,7 +63,7 @@ class TrajectoryPlanner():
         print vt
         self.rexarm.set_speeds(vt)
         # start moving
-        self.rexarm.pause(time_interval - look_ahead/1000)
+        self.rexarm.pause(look_ahead/1000)
         resultFile = open("with_path_smoothing.csv","wb")
         # resultFileVel = open("vel_with_path_smoothing.csv","wb")
         writeResult = csv.writer(resultFile, delimiter=',')
@@ -101,6 +101,7 @@ class TrajectoryPlanner():
             # self.rexarm.pause(time_interval-look_ahead/1000)
         # self.rexarm.pause(time_interval)
         # self.rexarm.set_positions(final_wp)
+        self.rexarm.pause(time_interval)
         resultFile.close()
 
 
@@ -162,10 +163,11 @@ class TrajectoryPlanner():
             cur_pos = self.rexarm.get_positions()[:]
             self.wp.insert(0,cur_pos);
             print self.wp
-            for i in range(len(self.wp)-1):
-                self.initial_wp = self.wp[i];
-                self.final_wp = self.wp[i+1];
+            self.initial_wp = self.wp[0];
+            while (len(self.wp)!=0):
+                self.final_wp = self.wp.pop();
                 self.go(self.initial_wp, self.final_wp, self.look_ahead);
+                self.initial_wp = self.final_wp;
 
             with open("data.csv", 'wb') as resultFile:
                 writeResult = csv.writer(resultFile, delimiter=',')

@@ -171,10 +171,7 @@ class Rexarm():
 
 
     def get_wrist_pose(self):
-<<<<<<< HEAD
         print FK_pox(joint_angles_fb[:]);
         return FK_pox(joint_angles_fb[:]);
-=======
         # print FK_pox(self.get_positions()[:]);
-        return FK_pox(self.get_positions()[:]);
->>>>>>> 5edaed7290b8e5fee8ba10fe8230fd554dea3cf7
+        # return FK_pox(self.get_positions()[:]);
