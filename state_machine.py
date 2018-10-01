@@ -306,7 +306,7 @@ class StateMachine():
         print self.rexarm.get_positions()[0:4], position
         self.tp.set_initial_wp()
         self.tp.set_final_wp(position)
-        self.tp.go(self.tp.initial_wp, self.tp.)
+        self.tp.go()
 
         # wait for mouse click
         while (self.kinect.new_click==False):
