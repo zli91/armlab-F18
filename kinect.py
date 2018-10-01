@@ -266,7 +266,9 @@ class Kinect():
                     # record vertexs
                     self.rectVertex.append(box)
                     # vertex coords in world frame
-                    vertexCoordInWorld = np.matmul(self.convert_to_world, [box[0],box[1],1])
+                    vertexCoord1 = np.matmul(self.convert_to_world, [box[0][0],box[0][1],1])
+                    vertexCoord2 = np.matmul(self.convert_to_world, [box[1][0],box[1][1],1])
+                    vertexCoordInWorld.append([vertexCoord1,vertexCoord2])
                     # record orientation in world frame
                     angle = atan((vertexCoordInWorld[1][1]-vertexCoordInWorld[0][1])/(vertexCoordInWorld[1][0]-vertexCoordInWorld[0][0]))
                     self.cubeOrient.append(angle)
