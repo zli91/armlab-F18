@@ -165,7 +165,7 @@ class TrajectoryPlanner():
             for i in range(len(self.wp)-1):
                 self.initial_wp = self.wp[i];
                 self.final_wp = self.wp[i+1];
-                self.go(self.initial_wp, self.final_wp, 10);
+                self.go(self.initial_wp, self.final_wp, self.look_ahead);
 
             with open("data.csv", 'wb') as resultFile:
                 writeResult = csv.writer(resultFile, delimiter=',')
