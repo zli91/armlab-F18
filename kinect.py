@@ -48,8 +48,10 @@ class Kinect():
         
 
     def processVideoFrame(self):
+        self.detectBlocksInDepthImage()
+        blockDetector()
         # draw contours
-        cv2.drawContours(self.currentVideoFrame,self.cubeContours,-1,(0,255,0),3)
+        cv2.drawContours(self.currentVideoFrame,self.rectVertex,-1,(0,255,0),3)
 
 
 
@@ -205,6 +207,8 @@ class Kinect():
         self.detectedCubeColor = []
         colorDetectionPoints = []
         self.cubeContours = []
+        self.rectVertex = []
+        self.cubeOrient = []
         
         for i in range(len(self.contours)):        
             # find center of mass
@@ -253,11 +257,26 @@ class Kinect():
                     self.detectedCubeColor.append(cubeColor[j])
                     # record contours
                     self.cubeContours.append(self.contours[i])
-                    # record coords
+                    # record center coords
                     self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
+                    # approximate bounding rectangle
+                    rect = cv2.minAreaRect(self.contours[i])
+                    box = cv2.boxPoints(rect)
+                    box = np.int0(box)
+                    # record vertexs
+                    self.rectVertex.append(box)
+                    # vertex coords in world frame
+                    vertexCoord1 = np.matmul(self.convert_to_world, [box[0][0],box[0][1],1])
+                    vertexCoord2 = np.matmul(self.convert_to_world, [box[1][0],box[1][1],1])
+                    vertexCoordInWorld.append([vertexCoord1,vertexCoord2])
+                    # record orientation in world frame
+                    angle = atan((vertexCoordInWorld[1][1]-vertexCoordInWorld[0][1])/(vertexCoordInWorld[1][0]-vertexCoordInWorld[0][0]))
+                    self.cubeOrient.append(angle)
+
                 else:
                     continue
         print self.cubeCenter
+        print self.cubeOrient
         print self.detectedCubeColor
         return None
 

@@ -23,13 +23,15 @@ def FK_dh(joint_angles, link):
     th2 = float(th2)
     th3 = float(th3)
     th4 = float(th4)
-    
+    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+    y_off = 292.1
+    offset_mat = np.array([[0,0,0,x_off],[0,0,0,y_off],[0,0,0,0],[0,0,0,0]])
     T1 = [
          [ cos(th1),   0,      sin(th1),     0],
          [ sin(th1),   0, -1.0*cos(th1),     0],
          [        0, 1.0,             0, 118.0],
          [        0,   0,             0,   1.0]
-         ]
+         ]+offset_mat
 
     
     T2 = [
@@ -37,26 +39,26 @@ def FK_dh(joint_angles, link):
          [ cos(th2)*sin(th1), -1.0*sin(th1)*sin(th2), -1.0*cos(th1), 99.0*cos(th2)*sin(th1)],
          [          sin(th2),               cos(th2),             0,  99.0*sin(th2) + 118.0],
          [                 0,                      0,             0,                    1.0]
-         ]
+         ]+offset_mat
     
     T3 = [
          [ cos(th1)*cos(th2)*cos(th3) - 1.0*cos(th1)*sin(th2)*sin(th3), - 1.0*cos(th1)*cos(th2)*sin(th3) - 1.0*cos(th1)*cos(th3)*sin(th2),      sin(th1), 99.0*cos(th1)*cos(th2) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
          [ cos(th2)*cos(th3)*sin(th1) - 1.0*sin(th1)*sin(th2)*sin(th3), - 1.0*cos(th2)*sin(th1)*sin(th3) - 1.0*cos(th3)*sin(th1)*sin(th2), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
          [                       cos(th2)*sin(th3) + cos(th3)*sin(th2),                         cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3),             0,                    99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 118.0],
          [                                                           0,                                                                 0,             0,                                                                                        1.0]
-         ]
+         ]+offset_mat
         
     T4 = [
          [ - 1.0*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)), sin(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*cos(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)),      sin(th1), 99.0*cos(th1)*cos(th2) - 143.6*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 143.6*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
          [ - 1.0*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), sin(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*cos(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 143.6*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 143.6*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
          [                                               sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                     cos(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) - 1.0*sin(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),             0,                                                        99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 143.6*sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + 143.6*cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + 118.0],
          [                                                                                                                                                     0,                                                                                                                                               0,             0,                                                                                                                                                                                                                                                  1.0]
-         ]
+         ]+offset_mat
     FK4 = np.round([T1,T2,T3,T4],6)
     #FK4 = format([T1,T2,T3,T4], '.2f')
     #FK4 = ([T1,T2,T3,T4])
     #print 'FK_DH result:\n',(np.matrix(FK4[link-1]))
-    print  (np.matrix(FK4[link-1])) 
+    #print  (np.matrix(FK4[link-1])) 
     return np.matrix(FK4[link-1])
 
     """
@@ -84,6 +86,10 @@ def FK_pox(joint_angles):
     note: phi is the euler angle about y in the base frame
 
     """
+<<<<<<< HEAD
+=======
+    #print joint_angles
+>>>>>>> 5edaed7290b8e5fee8ba10fe8230fd554dea3cf7
     l1 = 118;   # lengths of links in mm
     l2 = 99;
     l3 = 99;
@@ -134,7 +140,8 @@ def FK_pox(joint_angles):
     return [world_pos[0], world_pos[1], world_pos[2], phi];
 
 def IK(pose):
-    
+    x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+    y_off = 292.1
     d1 = 118
     a2 = 99
     a3 = 99
@@ -145,8 +152,8 @@ def IK(pose):
     if phi>0:
         print 'error: phi must be negative according to convention'
         return 0
-    Xe = float(Xe)
-    Ye = float(Ye)
+    Xe = float(Xe)-x_off
+    Ye = float(Ye)-y_off
     Ze = float(Ze) - d1
     phi = float(phi)
     
@@ -162,31 +169,31 @@ def IK(pose):
         print 'error: euler angle too stiff'
         return 0
     dR = Re - a4*cos(phi)
-    print 'dR:',dR
+   # print 'dR:',dR
     dZ = Ze + a4*sin(-phi)
-    print 'dZ',dZ
+   # print 'dZ',dZ
     beta = atan2(dZ,dR)
-    print 'beta:',beta
+    #print 'beta:',beta
     th1 = atan2(Ye,Xe)
-    print 'th1:',th1
-    print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
+    #print 'th1:',th1
+    #print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
     th3 = acos(1.0)
     #return [0,0,0,0]
-    print 'dRdZ:' ,(dZ**2+dR**2)**0.5
+    #print 'dRdZ:' ,(dZ**2+dR**2)**0.5
     th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
-    print 'th3:',th3
+    #print 'th3:',th3
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
-    print 'alpha:',alpha
+    #print 'alpha:',alpha
     th2 = beta+alpha
-    print 'th2:',th2
+    #print 'th2:',th2
     th4 = phi - th2 - th3
     
-    print 'IK result:',[th1,th2,th3,th4]
+    #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
     Ys = [0,a2*sin(th2),a2*sin(th2)+a3*sin(th2+th3),a2*sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
     plt.plot(Xs,Ys,'-o')
     plt.title('plot for X Y Z phi:' )
-    #plt.show()
+    plt.show()
     return[th1,th2,th3,th4]
     """
     TODO: implement this function
@@ -210,12 +217,12 @@ def get_euler_angles_from_T(T):
     a33 = T[2,2]
     a31 = T[2,0]
     a32 = T[2,1]
-    print 'a13-a31',a13,a23,a33,a32,a31
+    #print 'a13-a31',a13,a23,a33,a32,a31
     theta = round(atan2((1-a33**2)**0.5,a33),3)
     psi = round(atan2(a13,-a23),3)
     delta = round(atan2(a31,a32),3)
     euler = [psi,theta,delta]
-    print 'euler angle Z(psi)X(theta)Z(delta):',euler
+    #print 'euler angle Z(psi)X(theta)Z(delta):',euler
     return euler
     
 
@@ -225,7 +232,7 @@ def get_pose_from_T(T):
     Z=round(T[2,3],3)
     phi = round(get_euler_angles_from_T(T)[2],3)
     pose = [X,Y,Z,phi]
-    print 'pose(X Y Z phi):',pose
+    #print 'pose(X Y Z phi):',pose
     return pose
     """
     TODO: implement this function
@@ -246,5 +253,6 @@ def to_s_matrix(w,v):
     pass
 
 #test code
-get_euler_angles_from_T(FK_dh(IK([0,100,100,-pi/2]),4))
-get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
+get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
+#get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
+#IK([304,292+100,100,-pi/4])
