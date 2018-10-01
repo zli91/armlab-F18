@@ -46,7 +46,6 @@ class StateMachine():
                 self.calibrate()
             if(self.next_state == "execute"):
                 self.execute()
-<<<<<<< HEAD
             if(self.next_state == "recordWaypoint"):
                 self.recordWaypoint()
             if(self.next_state == "play"):
@@ -55,8 +54,6 @@ class StateMachine():
                 self.blockDetectionStart()
             if(self.next_state == "blockDetectionEnd"):
                 self.blockDetectionEnd()
-                
-=======
             if(self.next_state == "teachNRepeat"):
                 self.teachNRepeat()
             if(self.next_state == "blockDetection"):
@@ -74,7 +71,6 @@ class StateMachine():
             if (self.next_state == "buildPyramid"):
                 self.buildPyramid()
 
->>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
         if(self.current_state == "estop"):
             self.next_state = "estop"
             self.estop()  
@@ -103,13 +99,13 @@ class StateMachine():
             if(self.next_state == "idle"):
                 self.idle()
 
-<<<<<<< HEAD
         if(self.current_state == "blockDetectionStart"):
             if(self.next_state == "blockDetectionEnd"):
                 self.blockDetectionEnd()
 
         if(self.current_state == "blockDetectionEnd"):
-=======
+            self.idle();
+
         if(self.current_state == "clickNGrab"):
             if(self.next_state == "idle"):
                 self.idle()
@@ -131,7 +127,6 @@ class StateMachine():
                 self.idle()
 
         if(self.current_state == "buildPyramid"):
->>>>>>> a6465e1106e1aff40a821030d70534d014c044d7
             if(self.next_state == "idle"):
                 self.idle()
 
@@ -262,14 +257,14 @@ class StateMachine():
         # wait for mouse click
         self.current_state = "clickNGrab"
         self.next_state = "idle"
-        while (!self.kinect.new_click): 
+        while (self.kinect.new_click==False): 
             self.status_message = "State: Click n' Grab - waiting for the first mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
         self.kinect.new_click = False;
-        if (self.kinect.kinectCalibrated)
+        if (self.kinect.kinectCalibrated == True):
             z = self.kinect.currentDepthFrame[y][x]
-        else 
+        else:
             self.status_message = "State: Click and Grab - error: camera calibration not completed"
             print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
             return
@@ -280,7 +275,7 @@ class StateMachine():
         self.tp.add_wp(position)
         self.tp.execute_plan()
         # wait for mouse click
-        while (!self.kinect.new_click):
+        while (self.kinect.new_click==False):
             self.status_message = "State: Click and Grab - waiting for the second mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
