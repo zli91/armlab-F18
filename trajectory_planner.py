@@ -20,8 +20,8 @@ class TrajectoryPlanner():
         self.dt = 0.05 # command rate
         self.wp = [];
         self.T = 0;
-        self.time_factor = 10 # determines the total time motor takes from one point to the other
-        self.look_ahead = self.time_factor # determines how much time to look ahead when planning
+        self.time_factor = 12 # determines the total time motor takes from one point to the other
+        self.look_ahead = 8 # determines how much time to look ahead when planning
 
     def set_initial_wp(self):
         self.initial_wp = self.rexarm.get_positions()[0:4]
@@ -49,7 +49,7 @@ class TrajectoryPlanner():
         print("moving")
         vt = [0.00001,0.00001,0.000001,0.00001]
 
-        num_intervals = int(self.T/0.08);
+        num_intervals = int(self.T/0.05);
         if (num_intervals < 4):
             num_intervals = 4
         time_interval = float(self.T/num_intervals);
@@ -64,49 +64,40 @@ class TrajectoryPlanner():
         vt.append(0)
         self.rexarm.set_speeds(vt)
         # start moving
-        self.rexarm.pause(self.look_ahead/1000)
         resultFile = open("with_path_smoothing.csv","wb")
         # resultFileVel = open("vel_with_path_smoothing.csv","wb")
         writeResult = csv.writer(resultFile, delimiter=',')
         # writeResultVel = csv.writer(resultFileVel, delimiter=',')
         
+        current_pos = [0.0,0.0,0.0,0.0]
         time_begin = time.time();
-        pos = self.final_wp
+        pos = self.final_wp[:]
         pos.append(0)
         pos.append(0)
         self.rexarm.set_positions(pos)
+        self.rexarm.pause(time_interval-self.look_ahead/1000)
         # while (time.time()-time_begin<self.T):
         for j in range(num_intervals-1):
             # self.rexarm.set_positions(current_pos)
             # self.rexarm.pause(time_interval-0.01)
             cur_time = time_interval*(j+1)
-            #     # temp = false;
             # cur_time = time.time() - time_begin;
             for k in range(len(qt0)):
                 print coeffs[k][2], coeffs[k][3]
                 vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)
-                # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
+                current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
             vt.append(0)
             vt.append(0)
             self.rexarm.set_speeds(vt)
             # time.sleep(0.05)
             self.rexarm.pause(time_interval)
+
             # self.rexarm.set_positions(current_pos)
             write_pos = self.rexarm.get_positions()[:]
+            write_pos.append(current_pos)
             write_pos.append(time.time()-time_begin)
             writeResult.writerow(write_pos)
-            # write_vel = self.rexarm.get_speeds()[:]
-            # write_vel.append(vt[0])
-            # write_vel.append(vt[1])
-            # write_vel.append(vt[2])
-            # write_vel.append(vt[3])
-            # write_vel.append(time.time()-time_begin)
-            # writeResultVel.writerow(write_vel)
-            # and time_interval
-            # self.rexarm.pause(time_interval-look_ahead/1000)
         # self.rexarm.pause(time_interval)
-        # self.rexarm.set_positions(final_wp)
-        self.rexarm.pause(time_interval)
         resultFile.close()
 
 
@@ -114,7 +105,7 @@ class TrajectoryPlanner():
         pass
 
     def calc_time_from_waypoints(self, initial_wp, final_wp, max_speed=2.5):
-        max_velocity = [12.2595, 12.2595, 12.2595, 11.89]; #[MX, MX, MX, AX]
+        max_velocity = [5.75, 5.75, 5.75, 6.17]; #[MX, MX, MX, AX]
         time = float(0.0);
         # print "inital: ", self.initial_wp
         # print "final: ", self.final_wp
@@ -125,51 +116,30 @@ class TrajectoryPlanner():
             print "time: ", time
         self.T = float(time)
 
+    # used in go(). returns the cooefficients in cubic spline
     def generate_cubic_spline(self, initial_wp, final_wp, T):
         coeffs = [];
-        print T
         cubic_matrix = [[1,0,0,0],[0,1,0,0],[1,T,T*T,T*T*T], [0,1,2*T,3*T*T]]
         print cubic_matrix
         for i in range(len(self.initial_wp)):
             temp = [];
-            # time = float(T)
             conditions = [self.initial_wp[i], 0, self.final_wp[i], 0]
-            # temp.append(initial_wp[i])  # a0
-            # temp.append(0)              # a1
-            # solve for a2 and a3
-            # a = np.array([[time*time, time*time*time], [2*time, 3*time*time]])
-            # b = np.array([final_wp[i] - initial_wp[i], 0])
-            # x = np.linalg.solve(a,b)
             temp = np.dot(np.linalg.inv(cubic_matrix),np.transpose(conditions))
-            # temp = [a0, a1, a2, a3]
             coeffs.append(temp[:])
         print coeffs
         return coeffs
 
-    # def generate_quintic_poly(self, initial_wp, final_wp, T):
-    #     quintic_array = np.array([[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,2,0,0,0],[1,T,T*T,T*T*T,T*T*T*T,T*T*T*T*T],
-    #         [0,1,2*T,3*T*T,4*T*T*T,5*T*T*T*T],[0,0,2,6*T,12*T*T,20*T*T*T]])
-
-    #     coeffs = [];
-    #     conditions = [0, 0, 0, ]
-    #     for i in range(len(initial_wp)):
-    #         temp = [];
-    #         time = float(T)
-    #         conditions = [initial_wp[i], 0, 0, final_wp[i], 0, 0]    # [q0 v0 a0 qf vf af]
-    #         coeffs.append(np.matmul(np.linalg.inv(quintic_array), conditions)
-    #         # temp = [a0, a1, a2, a3]
-    #     print coeffs
-    #     return coeffs 
 
     def execute_plan(self, look_ahead=8):
         # print([max_speed]*len(self.rexarm.joints))
         # self.rexarm.set_speeds(self, [max_speed]*4)
         if len(self.wp)!= 0:
             # self.initial_wp = self.wp[0];
+            self.initial_wp = self.rexarm.get_positions()[0:4]
             while (len(self.wp)!=0):
                 self.final_wp = self.wp.pop(0);
                 self.go();
-                self.initial_wp = self.rexarm.get_positions[0:4];
+                self.initial_wp = self.rexarm.get_positions()[0:4];
 
             with open("data.csv", 'wb') as resultFile:
                 writeResult = csv.writer(resultFile, delimiter=',')
