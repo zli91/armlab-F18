@@ -118,24 +118,14 @@ class Gui(QMainWindow):
         self.ui.btn_exec.clicked.connect(partial(self.sm.set_next_state, "execute"))
         self.ui.btnUser1.setText("Calibrate")
         self.ui.btnUser1.clicked.connect(partial(self.sm.set_next_state, "calibrate"))
-
-        self.ui.btnUser2.setText("Record Waypoints")
-        self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
-        self.ui.btnUser3.setText("Play")
-        self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "play"))
-        self.ui.btnUser4.setText("Block Detection Start")
-        self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "blockDetectionStart"))
-        self.ui.btnUser5.setText("Block Detection End")
-        self.ui.btnUser5.clicked.connect(partial(self.sm.set_next_state, "blockDetectionEnd"))
-
+        
         self.ui.btnUser2.setText("Teach and Repeat")
         self.ui.btnUser2.clicked.connect(partial(self.sm.set_next_state, "teachNRepeat"))
         self.ui.btnUser3.setText("Record Waypoints")
         self.ui.btnUser3.clicked.connect(partial(self.sm.set_next_state, "recordWaypoint"))
         self.ui.btnUser4.setText("Play")
         self.ui.btnUser4.clicked.connect(partial(self.sm.set_next_state, "play"))
-        self.ui.btnUser5.setText("Block Detection")
-        self.ui.btnUser5.clicked.connect(partial(self.sm.set_next_state, "blockDetection"))
+
         self.ui.btnUser6.setText("Click and Grab")
         self.ui.btnUser6.clicked.connect(partial(self.sm.set_next_state, "clickNGrab"))
         self.ui.btnUser7.setText("Pick n' Place")
@@ -148,6 +138,11 @@ class Gui(QMainWindow):
         self.ui.btnUser10.clicked.connect(partial(self.sm.set_next_state, "stackHigh"))
         self.ui.btnUser10.setText("Pyramid Builder!")
         self.ui.btnUser10.clicked.connect(partial(self.sm.set_next_state, "buildPyramid"))
+        self.ui.btnUser11.setText("Block Detection Start")
+        self.ui.btnUser11.clicked.connect(partial(self.sm.set_next_state, "blockDetectionStart"))
+        self.ui.btnUser12.setText("Block Detection End")
+        self.ui.btnUser12.clicked.connect(partial(self.sm.set_next_state, "blockDetectionEnd"))
+
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)

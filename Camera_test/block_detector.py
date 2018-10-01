@@ -30,6 +30,7 @@ def blockDetector(depthImage,rgbImage,hsvImage):
     cubeCenter = []
     detectedCubeColor = []
     colorDetectionPoints = []
+    rectVertex2 = []
 
     # use threshold to detect blocks in depth image
     (grayLower,grayUpper) = (150, 178)
@@ -89,8 +90,15 @@ def blockDetector(depthImage,rgbImage,hsvImage):
             if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
                 # define colors
                 detectedCubeColor.append(cubeColor[j])
+                # approximate bounding rectangle
+                rect = cv2.minAreaRect(cubeContours[i])
+                box = cv2.boxPoints(rect)
+                box = np.int0(box)
+                # record vertexs
+                rectVertex2.append([box[1],box[2]])
+                
                 # draw contours
-                cv2.drawContours(rgbImage,[cubeContours[i]],-1,(0,255,0),3)
+                cv2.drawContours(rgbImage,[box],-1,(0,255,0),3)
                 # record coords
                 cubeCenter.append([centerX,centerY])
             else:
