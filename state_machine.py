@@ -303,14 +303,9 @@ class StateMachine():
         world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
         position = [0.0,0.0,0.0,0.0]
-        while(True):
-            try:
-                position = IK([world_coord[0], world_coord[1], world_Z, phi])
-            except:
-                phi +=np.pi/18
-            finally:
-                phi = -np.pi/2
-                break        
+
+        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+               
         print self.rexarm.get_positions()[0:4]
         print  position
         self.tp.set_initial_wp()
@@ -330,14 +325,7 @@ class StateMachine():
         """
         TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
         """
-        while(True):
-            try:
-                position = IK([world_coord[0], world_coord[1], world_Z, phi])
-            except:
-                phi +=np.pi/18
-            finally:
-                phi = -np.pi/2
-                break 
+        position = IK([world_coord[0], world_coord[1], world_Z, phi]) 
         self.tp.set_initial_wp()
         self.tp.set_final_wp(position)
         self.tp.go()
