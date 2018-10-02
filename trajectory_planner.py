@@ -49,7 +49,7 @@ class TrajectoryPlanner():
         print("moving")
         vt = [0.00001,0.00001,0.000001,0.00001]
 
-        num_intervals = int(self.T/0.05);
+        num_intervals = int(self.T/0.08);
         if (num_intervals < 4):
             num_intervals = 4
         time_interval = float(self.T/num_intervals);
@@ -83,8 +83,7 @@ class TrajectoryPlanner():
             cur_time = time_interval*(j+1)
             # cur_time = time.time() - time_begin;
             for k in range(len(qt0)):
-                print coeffs[k][2], coeffs[k][3]
-                vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)
+                vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)/1.8
                 current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
             vt.append(0)
             vt.append(0)
@@ -94,7 +93,7 @@ class TrajectoryPlanner():
 
             # self.rexarm.set_positions(current_pos)
             write_pos = self.rexarm.get_positions()[:]
-            write_pos.append(current_pos)
+            write_pos+=current_pos[:]
             write_pos.append(time.time()-time_begin)
             writeResult.writerow(write_pos)
         # self.rexarm.pause(time_interval)
@@ -105,7 +104,7 @@ class TrajectoryPlanner():
         pass
 
     def calc_time_from_waypoints(self, initial_wp, final_wp, max_speed=2.5):
-        max_velocity = [5.75, 5.75, 5.75, 6.17]; #[MX, MX, MX, AX]
+        max_velocity = [12.2595, 12.2595, 12.2595, 11.89]; #[MX, MX, MX, AX]
         time = float(0.0);
         # print "inital: ", self.initial_wp
         # print "final: ", self.final_wp
@@ -120,7 +119,6 @@ class TrajectoryPlanner():
     def generate_cubic_spline(self, initial_wp, final_wp, T):
         coeffs = [];
         cubic_matrix = [[1,0,0,0],[0,1,0,0],[1,T,T*T,T*T*T], [0,1,2*T,3*T*T]]
-        print cubic_matrix
         for i in range(len(self.initial_wp)):
             temp = [];
             conditions = [self.initial_wp[i], 0, self.final_wp[i], 0]
