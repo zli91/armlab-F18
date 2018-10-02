@@ -30,7 +30,7 @@ class Rexarm():
                             [-90, 120],
                             [-125, 125],
                             [-150, 150],
-                            [-1, 90]], dtype=np.float)*D2R
+                            [0, 90]], dtype=np.float)*D2R
                         # S[-34, 214]
                         # E[-90, 120]
                         # W[-125 125]
@@ -62,14 +62,18 @@ class Rexarm():
             self.close_gripper()
 
     def open_gripper(self):
-        """ TODO """
-        self.gripper_state = False
-        pass
+        pos = self.get_positions()[:]
+        pos[5] = 1.51
+        print pos
+        self.set_positions(pos)
+        self.pause(0.5)
 
     def close_gripper(self):
-        """ TODO """
-        self.gripper_state = True
-        pass
+        pos = self.get_positions()[:]
+        pos[5] = 0.0
+        print pos
+        self.set_positions(pos)
+        self.pause(0.5)
 
     def toggle_gripper(self):
         """ TODO """

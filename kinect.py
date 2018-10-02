@@ -24,6 +24,7 @@ class Kinect():
         self.new_click = False
         self.rgb_click_points = np.zeros((5,2),int)
         self.depth_click_points = np.zeros((5,2),int)
+        self.worldHeight = 945
 
         self.blockDetected = False
 

@@ -158,12 +158,19 @@ class StateMachine():
         self.current_state = "idle"
         # self.rexarm.set_torque_limits([0.0]*self.rexarm.num_joints)
         self.rexarm.get_feedback()
+        # self.rexarm.open_gripper()
         # cur = time.time()
+        # gripper = True
         # while (True):
-        #     if (time.time() - cur > 3):
+        #     if (time.time() - cur > 5):
         #         cur = time.time()
-        #         self.rexarm.get_feedback()
-        #         print self.rexarm.get_positions();
+        #         if (gripper):
+        #             self.rexarm.close_gripper()
+        #             gripper = False
+        #         else:
+        #             self.rexarm.open_gripper()
+        #             gripper = True
+                
 
         
 
@@ -281,56 +288,73 @@ class StateMachine():
     # where you can click on a block in the video and the arm will move to grasping location, 
     # then a second click will tell the arm to move to a drop off location. 
     def clickNGrab(self):
-        # wait for mouse click
         self.current_state = "clickNGrab"
         self.next_state = "idle"
+
+        pos_list = []
+
+        # wait for mouse click
         while (self.kinect.new_click==False): 
             self.status_message = "State: Click n' Grab - waiting for the first mouse click"
         phi = -np.pi/2
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
         self.kinect.new_click = False;
+        
+        # check if cv is calibrated
         if (self.kinect.kinectCalibrated == True):
             z = self.kinect.currentDepthFrame[y][x]
         else:
             self.status_message = "State: Click and Grab - error: camera calibration not completed"
             print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
             return
-        """
-        TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
-        """
+
+        # calculate the coordinates
         mouse_coor = [x,y,1]
         world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
-        world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
-        position = [0.0,0.0,0.0,0.0]
-
+        # 2 accounts for the offset from center of block to the surface
+        world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863) - 2 
         position = IK([world_coord[0], world_coord[1], world_Z, phi])
-               
-        print self.rexarm.get_positions()[0:4]
-        print  position
-        self.tp.set_initial_wp()
-        self.tp.set_final_wp(position)
-        self.tp.go()
+        position_top = IK([world_coord[0], world_coord[1], 200, phi])
+
+        # add the waypoints into tp
+        pos_list.append(position_top)
+        pos_list.append(position)
+        for i in pos_list:
+            self.tp.add_wp(i)
+        finish = self.tp.execute_plan_and_grab()
+
+        while (finish == False):
+            continue
+        # clear the previous positions and append the top position to the list
+        del pos_list[:]
+        pos_list.append(position_top)
 
         # wait for mouse click
         while (self.kinect.new_click==False):
             self.status_message = "State: Click and Grab - waiting for the second mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
+        
+        # calculate the coordinates
         mouse_coor = [x,y,1]
         world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
-        z = self.kinect.currentDepthFrame[y][x]
-        world_Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
-        self.kinect.new_click = False;
-        """
-        TODO: use inverse kinematics to calculate the joint angles for given x, y, and z 
-        """
-        position = IK([world_coord[0], world_coord[1], world_Z, phi]) 
-        self.tp.set_initial_wp()
-        self.tp.set_final_wp(position)
-        self.tp.go()
-        # self.tp.add_wp(position)
-        # self.tp.execute_plan()
+        world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+        position = [0.0,0.0,0.0,0.0]
+        position = IK([world_coord[0], world_coord[1], world_Z, phi])
+        position_top = IK([world_coord[0], world_coord[1], 200, phi])
+
+        # add the waypoints into tp
+        pos_list.append(position_top)
+        pos_list.append(position)
+        for i in pos_list:
+            self.tp.add_wp(i)
+        self.tp.execute_plan_and_place()
+
+        self.tp.add_wp([0,0,0,0])
+        self.tp.execute_plan_and_grab()
+        self.rexarm.close_gripper()
+
 
     def pickNPlace(self):
         self.current_state = "pickNPlace"

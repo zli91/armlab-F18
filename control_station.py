@@ -278,7 +278,7 @@ class Gui(QMainWindow):
                 
                 self.ui.rdoutMousePixels.setText("(%.0f,%.0f,%.0f)" % (x,y,z))
                 if (self.kinect.kinectCalibrated):
-                    Z = 950 - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+                    Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
                     world_coord = np.matmul(self.kinect.convert_to_world, mouse_coord)
                     self.ui.rdoutMouseWorld.setText("(%.0f,%.0f,%.0f)" % (world_coord[0],world_coord[1],Z))
                 else:

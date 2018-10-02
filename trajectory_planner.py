@@ -1,6 +1,7 @@
 import numpy as np 
 import time
 from rexarm import Rexarm as rexarm
+from kinect import Kinect as kinect
 import csv
 import math
 
@@ -30,7 +31,7 @@ class TrajectoryPlanner():
         self.final_wp = waypoint;
 
     def add_wp(self, joints):
-        self.wp.append(joint[:])
+        self.wp.append(joints[:])
         print(self.wp)
 
     def set_wp(self):
@@ -38,9 +39,15 @@ class TrajectoryPlanner():
         self.wp.append(temp)
         print(self.wp);
 
+    def open_gripper(self):
+        self.rexarm.open_gripper()
+
+    def close_gripper(self):
+        self.rexarm.close_gripper()
+
     def go(self, max_speed = 2.5):
-        qt0 = self.initial_wp
-        qtf = self.final_wp
+        qt0 = self.initial_wp[:]
+        qtf = self.final_wp[:]
         print ("calculating time needed")
         self.calc_time_from_waypoints(self.initial_wp, self.final_wp)
         # self.T = float(2)
@@ -60,20 +67,23 @@ class TrajectoryPlanner():
         for k in range(len(qt0)):
             vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*self.look_ahead/1000 + 3*coeffs[k][3]*self.look_ahead/1000*self.look_ahead/1000)
             # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
-        vt.append(0)
-        vt.append(0)
+        vt.append(20)
+        vt.append(20)
         self.rexarm.set_speeds(vt)
+
         # start moving
         resultFile = open("with_path_smoothing.csv","wb")
         # resultFileVel = open("vel_with_path_smoothing.csv","wb")
         writeResult = csv.writer(resultFile, delimiter=',')
         # writeResultVel = csv.writer(resultFileVel, delimiter=',')
         
-        current_pos = [0.0,0.0,0.0,0.0]
+        # add gripper positions to pos
+        current_pos = self.rexarm.get_positions()[:]
         time_begin = time.time();
         pos = self.final_wp[:]
-        pos.append(0)
-        pos.append(0)
+        pos.append(current_pos[4])
+        pos.append(current_pos[5])
+
         self.rexarm.set_positions(pos)
         self.rexarm.pause(time_interval-self.look_ahead/1000)
         # while (time.time()-time_begin<self.T):
@@ -85,8 +95,8 @@ class TrajectoryPlanner():
             for k in range(len(qt0)):
                 vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)/1.8
                 current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
-            vt.append(0)
-            vt.append(0)
+            vt.append(20)
+            vt.append(20)
             self.rexarm.set_speeds(vt)
             # time.sleep(0.05)
             self.rexarm.pause(time_interval)
@@ -97,7 +107,10 @@ class TrajectoryPlanner():
             write_pos.append(time.time()-time_begin)
             writeResult.writerow(write_pos)
         # self.rexarm.pause(time_interval)
+        self.rexarm.set_positions(pos)
         resultFile.close()
+        print "complete moving"
+        return True
 
 
     def stop(self):
@@ -160,3 +173,34 @@ class TrajectoryPlanner():
                 #         writeResult.writerow(current_pos)
             self.rexarm.pause(2)
         # self.wp = [[0.0, 0.0, 0.0, 0.0]]
+
+    def execute_plan_and_grab(self, look_ahead=8):
+        # print([max_speed]*len(self.rexarm.joints))
+        # self.rexarm.set_speeds(self, [max_speed]*4)
+        if len(self.wp)!= 0:
+            finish = False
+            self.open_gripper()
+            # self.initial_wp = self.wp[0];
+            self.initial_wp = self.rexarm.get_positions()[0:4]
+            while (len(self.wp)!=0):
+                self.final_wp = self.wp.pop(0);
+                self.go();
+                self.initial_wp = self.rexarm.get_positions()[0:4];
+            self.rexarm.get_positions()[:]
+            self.close_gripper()
+        return True
+
+    def execute_plan_and_place(self, look_ahead=8):
+        # print([max_speed]*len(self.rexarm.joints))
+        # self.rexarm.set_speeds(self, [max_speed]*4)
+        if len(self.wp)!= 0:
+            self.close_gripper()
+            # self.initial_wp = self.wp[0];
+            self.initial_wp = self.rexarm.get_positions()[0:4]
+            while (len(self.wp)!=0):
+                self.final_wp = self.wp.pop(0);
+                self.go();
+                self.initial_wp = self.rexarm.get_positions()[0:4];
+            self.rexarm.get_positions()[:]
+            self.open_gripper()
+        return True
