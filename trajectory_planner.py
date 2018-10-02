@@ -20,7 +20,7 @@ class TrajectoryPlanner():
         self.dt = 0.05 # command rate
         self.wp = [];
         self.T = 0;
-        self.time_factor = 12 # determines the total time motor takes from one point to the other
+        self.time_factor = 8 # determines the total time motor takes from one point to the other
         self.look_ahead = 8 # determines how much time to look ahead when planning
 
     def set_initial_wp(self):
