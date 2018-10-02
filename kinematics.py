@@ -271,4 +271,8 @@ def to_s_matrix(w,v):
 #test code
 # get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
 # get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
+<<<<<<< HEAD
 print IK([x_off+200,y_off-200,118,-pi]);
+=======
+# print IK([x_off+200,y_off-200,118,-pi/4]);
+>>>>>>> 239dccf90681c4bec248d841c7dbc50e7fc4c39e
