@@ -156,28 +156,40 @@ def IK(pose):
     #parameters:
     
     Re = (Xe**2 + Ye**2)**0.5
-    print 'Re:',Re
     dR = Re - a4*cos(-phi)
+    dR = Re - a4*cos(phi)
+    dZ = Ze + a4*sin(-phi)
+    while True:
+        try:
+            th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
+            break
+        except ValueError:
+            
+            phi += pi/36
+            print 'phi too stiff, modyfied to',phi*180/pi,'degree'
+            Re = (Xe**2 + Ye**2)**0.5
+            dR = Re - a4*cos(-phi)
+            dR = Re - a4*cos(phi)
+            dZ = Ze + a4*sin(-phi)
+            
+
+    print 'Re:',Re
     if (Re>341.6 or Ze>118+341.6):
         print 'error: location out of range'
         return 0
     elif Re>a2+a3+a4*cos(-phi):
         print 'error: euler angle too stiff'
         return 0
-    dR = Re - a4*cos(phi)
-    
-    dZ = Ze + a4*sin(-phi)
+
     
     beta = atan2(dZ,dR)
     #print 'beta:',beta
     th1 = atan2(Ye,Xe)
     print 'dZ',dZ
     print 'dR:',dR
-    print 'th3 calc:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
-    th3 = acos(1.0)
-    #return [0,0,0,0]
+    print 'th3_cos:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
     print 'dRdZ:' ,(dZ**2+dR**2)**0.5
-    th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
+    
     
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
     #print 'alpha:',alpha
@@ -185,10 +197,10 @@ def IK(pose):
     
     th4 = phi - th2 - th3
 
-    print 'th1:',th1
-    print 'th4:',th4
-    print 'th2:',th2
-    print 'th3:',th3
+    # print 'th1:',th1
+    # print 'th4:',th4
+    # print 'th2:',th2
+    # print 'th3:',th3
     
     #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
@@ -259,4 +271,4 @@ def to_s_matrix(w,v):
 #test code
 # get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
 # get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
-print IK([x_off+200,y_off-200,118,-pi/4]);
+print IK([x_off+200,y_off-200,118,-pi]);
