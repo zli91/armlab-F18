@@ -161,10 +161,15 @@ def IK(pose):
     dZ = Ze + a4*sin(-phi)
     while True:
         try:
-            th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
-            break
-        except ValueError:
+            if phi < 0: 
+                th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
+                break
+            else:
+                print 'position impossible to reach'
+                return[0,0,0,0]
+                break
             
+        except ValueError:
             phi += pi/36
             print 'phi too stiff, modyfied to',phi*180/pi,'degree'
             Re = (Xe**2 + Ye**2)**0.5
