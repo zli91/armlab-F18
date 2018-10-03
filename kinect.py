@@ -25,6 +25,8 @@ class Kinect():
         self.rgb_click_points = np.zeros((5,2),int)
         self.depth_click_points = np.zeros((5,2),int)
         self.worldHeight = 945
+        self.x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+        self.y_off = 301.5
 
         self.blockDetected = False
 
@@ -48,7 +50,33 @@ class Kinect():
         else:
             self.loadVideoFrame()
 
+    def world_coord(self, x, y):
+        # check if cv is calibrated
+        if (self.kinectCalibrated == True):
+            z = self.currentDepthFrame[y][x]
+        else:
+            print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
+            return
+        # calculate the coordinates
+        mouse_coor = [x,y,1]
+        world_coord = np.matmul(self.convert_to_world, mouse_coor)
+        # x and y coordinates converting to board without pinhole correction
+        cam_X = world_coord[0]
+        cam_Y = world_coord[1]
+        # actual dheight above board of current point
+        world_Z = self.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+        # converting x in pinhold to x in world
+        d = (self.x_off-cam_X)*(self.worldHeight-cam_Z)/self.worldHeight
+        diff = (self.x_off-cam_X)-d
+        world_X = cam_X+diff;
+        # converting y in pinhole to y in world
+        d = (self.y_off-cam_Y)*(self.worldHeight-cam_Z)/self.worldHeight
+        diff = (self.y_off-cam_Y)-d
+        world_Y = cam_Y+diff;
         
+        return [world_X, world_Y, world_Z]
+
+
 
     def processVideoFrame(self):
         self.detectBlocksInDepthImage()

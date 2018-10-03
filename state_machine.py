@@ -310,12 +310,13 @@ class StateMachine():
             return
 
         # calculate the coordinates
-        mouse_coor = [x,y,1]
-        world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
-        # 2 accounts for the offset from center of block to the surface
-        world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863) - 2 
-        position = IK([world_coord[0], world_coord[1], world_Z, phi])
-        position_top = IK([world_coord[0], world_coord[1], 200, phi])
+        # mouse_coor = [x,y,1]
+        # world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
+        # # 2 accounts for the offset from center of block to the surface
+        # world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863) - 2 
+        world_coord = self.kinect.world_coord(x,y)
+        position = IK([world_coord[0], world_coord[1], world_coord[2], phi])
+        position_top = IK([world_coord[0], world_coord[1], world_coord[2]+150, phi])
 
         # add the waypoints into tp
         pos_list.append(position_top)
@@ -337,12 +338,13 @@ class StateMachine():
         y = self.kinect.last_click[1]
         
         # calculate the coordinates
-        mouse_coor = [x,y,1]
-        world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
-        world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
-        position = [0.0,0.0,0.0,0.0]
-        position = IK([world_coord[0], world_coord[1], world_Z, phi])
-        position_top = IK([world_coord[0], world_coord[1], 200, phi])
+        # z = self.kinect.currentDepthFrame[y][x]
+        # mouse_coor = [x,y,1]
+        # world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
+        # world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+        world_coord = self.kinect.world_coord(x,y);
+        position = IK([world_coord[0], world_coord[1], world_coord[2], phi])
+        position_top = IK([world_coord[0], world_coord[1], world_coord[2]+150, phi])
 
         # add the waypoints into tp
         pos_list.append(position_top)
