@@ -161,7 +161,7 @@ def IK(pose):
     dZ = Ze + a4*sin(-phi)
     while True:
         try:
-            if phi < 0: 
+            if phi <= 0: 
                 th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
                 break
             else:
