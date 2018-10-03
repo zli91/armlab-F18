@@ -170,7 +170,7 @@ def IK(pose):
                 break
             
         except ValueError:
-            phi += pi/36
+            phi += pi/180
             print 'phi too stiff, modyfied to',phi*180/pi,'degree'
             Re = (Xe**2 + Ye**2)**0.5
             dR = Re - a4*cos(-phi)
@@ -181,10 +181,10 @@ def IK(pose):
     print 'Re:',Re
     if (Re>341.6 or Ze>118+341.6):
         print 'error: location out of range'
-        return 0
+        return[0,0,0,0]
     elif Re>a2+a3+a4*cos(-phi):
         print 'error: euler angle too stiff'
-        return 0
+        return[0,0,0,0]
 
     
     beta = atan2(dZ,dR)
@@ -213,10 +213,12 @@ def IK(pose):
     plt.plot(Xs,Ys,'-o')
     plt.title('plot for X Y Z phi:' )
     plt.show()
-    th2 = pi/2 - th2
-    th3 = -th3
-    th4 = -th4
-    return[th1,th2,th3,th4]
+    th2r = pi/2 - th2
+    th3r = -th3
+    th4r = -th4
+    return[th1,th2r,th3r,th4r]
+    # phi = -th4r + (pi/2 - th2r) - th3r
+    
     """
     TODO: implement this function
 
