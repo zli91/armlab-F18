@@ -24,7 +24,7 @@ class Kinect():
         self.new_click = False
         self.rgb_click_points = np.zeros((5,2),int)
         self.depth_click_points = np.zeros((5,2),int)
-        self.worldHeight = 945
+        self.worldHeight = 942.0
         self.x_off = 304.88  # distances from center of the bottom of ReArm to world origin
         self.y_off = 301.5
 
@@ -51,6 +51,8 @@ class Kinect():
             self.loadVideoFrame()
 
     def world_coord(self, x, y):
+        height_y = 920.5
+        height_x = 918.5
         # check if cv is calibrated
         if (self.kinectCalibrated == True):
             z = self.currentDepthFrame[y][x]
@@ -66,20 +68,17 @@ class Kinect():
         # actual dheight above board of current point
         world_Z = self.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
         # converting x in pinhold to x in world
-        d = (self.x_off-cam_X)*(self.worldHeight-cam_Z)/self.worldHeight
-        diff = (self.x_off-cam_X)-d
-        world_X = cam_X+diff;
+        d = float((self.x_off-cam_X)*(height_x-world_Z)/height_x)
+        world_X = self.x_off-d;
         # converting y in pinhole to y in world
-        d = (self.y_off-cam_Y)*(self.worldHeight-cam_Z)/self.worldHeight
-        diff = (self.y_off-cam_Y)-d
-        world_Y = cam_Y+diff;
+        d = float((self.y_off-cam_Y)*(height_y-world_Z)/height_y)
+        world_Y = self.y_off-d
         
         return [world_X, world_Y, world_Z]
 
 
 
     def processVideoFrame(self):
-        self.detectBlocksInDepthImage()
         self.blockDetector()
         # draw contours
         cv2.drawContours(self.currentVideoFrame,self.rectVertex,-1,(0,255,0),3)
@@ -206,7 +205,7 @@ class Kinect():
         You will need to locate
         blocks in 3D space
         """
-
+        self.detectBlocksInDepthImage()
         cubeColor = ['yellow','orange','pink','black','red','purple','green','blue']
         # rgbBoundaries = [ # b,g,r
         #     ([4, 160, 240], [50, 210, 253]), # yellow
@@ -241,6 +240,7 @@ class Kinect():
         self.rectVertex = []
         self.cubeOrient = []
         self.vertexCoordInWorld = []
+        camera_coord = []
         
         for i in range(len(self.contours)):        
             # find center of mass
@@ -250,9 +250,10 @@ class Kinect():
 
             # # find if center is in world frame
             centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])
+            
             if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] < 375 and 250 < centerCoordInWorld[1] < 390):
                 continue
-
+            
             # color detection points array
             colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
                 (centerX-2,centerY-3), (centerX-2,centerY-2), (centerX-2,centerY-1), (centerX-2,centerY), (centerX-2,centerY+1), (centerX-2,centerY+2), (centerX-2,centerY+3), 
@@ -291,6 +292,7 @@ class Kinect():
                     self.cubeContours.append(self.contours[i])
                     # record center coords
                     self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
+                    camera_coord.append([centerX,centerY])
                     # approximate bounding rectangle
                     rect = cv2.minAreaRect(self.contours[i])
                     box = cv2.boxPoints(rect)
@@ -312,9 +314,10 @@ class Kinect():
                 print self.cubeCenter
                 print self.cubeOrient
                 print self.detectedCubeColor
+                print camera_coord
             
 
-        return None
+        return camera_coord
 
 
     def detectBlocksInDepthImage(self):
@@ -324,7 +327,7 @@ class Kinect():
         in the depth image
         """
         # convert depthImage into 8 bits
-        depthImage = self.currentDepthFrame
+        depthImage = self.currentDepthFrame[:]
         np.clip(depthImage,0,2**10 - 1,depthImage)
         depthImage >>= 2
         depthImage = depthImage.astype(np.uint8)

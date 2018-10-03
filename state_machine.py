@@ -302,40 +302,42 @@ class StateMachine():
         self.kinect.new_click = False;
         
         # check if cv is calibrated
-        if (self.kinect.kinectCalibrated == True):
-            z = self.kinect.currentDepthFrame[y][x]
-        else:
-            self.status_message = "State: Click and Grab - error: camera calibration not completed"
-            print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
-            return
 
         # calculate the coordinates
         # mouse_coor = [x,y,1]
         # world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         # # 2 accounts for the offset from center of block to the surface
         # world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863) - 2 
+        cur_pos = self.rexarm.get_positions()[:]
         world_coord = self.kinect.world_coord(x,y)
-        position = IK([world_coord[0], world_coord[1], world_coord[2], phi])
-        position_top = IK([world_coord[0], world_coord[1], world_coord[2]+150, phi])
+        print "click", x,y
+        position = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+        print "click", world_coord
+        position_rot = [position[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+        position_top = IK([world_coord[0], world_coord[1], 200, phi])
 
         # add the waypoints into tp
-        pos_list.append(position_top)
+        pos_list.append(position_rot)
+        # pos_list.append(position_top)
         pos_list.append(position)
+
         for i in pos_list:
             self.tp.add_wp(i)
         finish = self.tp.execute_plan_and_grab()
+        phi = next_phi(position)
 
         while (finish == False):
             continue
         # clear the previous positions and append the top position to the list
         del pos_list[:]
-        pos_list.append(position_top)
+        pos_list.append(position_rot[:])
 
         # wait for mouse click
         while (self.kinect.new_click==False):
             self.status_message = "State: Click and Grab - waiting for the second mouse click"
         x = self.kinect.last_click[0]
         y = self.kinect.last_click[1]
+        self.kinect.new_click=False
         
         # calculate the coordinates
         # z = self.kinect.currentDepthFrame[y][x]
@@ -343,26 +345,70 @@ class StateMachine():
         # world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         # world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
         world_coord = self.kinect.world_coord(x,y);
-        position = IK([world_coord[0], world_coord[1], world_coord[2], phi])
-        position_top = IK([world_coord[0], world_coord[1], world_coord[2]+150, phi])
+        position = IK([world_coord[0], world_coord[1], world_coord[2]+20, phi])
+        position_rot = [position[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+        # position_top = IK([world_coord[0], world_coord[1], 200, phi])
 
         # add the waypoints into tp
-        pos_list.append(position_top)
+        pos_list.append(position_rot[:])
         pos_list.append(position)
         for i in pos_list:
             self.tp.add_wp(i)
         self.tp.execute_plan_and_place()
 
+        self.tp.add_wp(position_rot[:])
         self.tp.add_wp([0,0,0,0])
-        self.tp.execute_plan_and_grab()
-        self.rexarm.close_gripper()
+        self.tp.execute_plan()
 
 
     def pickNPlace(self):
         self.current_state = "pickNPlace"
         self.next_state = "idle"
         self.status_message = "State: Pick n' Place"
-        self.rexarm.pause(2)
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        phi = -np.pi/2
+        positions = self.kinect.blockDetector()[:]
+        input_positions = []
+        for i in range(len(positions)):
+            print "camera position detected"
+            print positions[i]
+            # grab the block
+            cur_pos = self.rexarm.get_positions()[:]
+            x = positions[i][0]
+            y = positions[i][1]
+
+            if (self.kinect.kinectCalibrated == True):
+                z = self.kinect.currentDepthFrame[y][x]
+            else:
+                print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
+                return
+            # calculate the coordinates
+            mouse_coor = [x,y,1]
+            world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
+            # actual dheight above board of current point
+            world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+            print "world coord converted"
+            print world_coord, world_Z
+
+            joints = IK([world_coord[0], world_coord[1], world_Z, phi])
+            
+            joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+            input_positions.append(joints_rot[:])
+            input_positions.append(joints[:])
+
+            # place the block
+            world_coord_p = [x_off-(world_coord[0] - x_off), y_off - (world_coord[1] - y_off), world_coord[2]-20, phi]
+            joints_p = IK([world_coord_p[0], world_coord_p[1], world_coord_p[2]-20, phi])
+            joints_rot = [joints_p[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+            input_positions.append(joints_rot[:])
+            input_positions.append(joints_p[:])
+        print "input:"
+        print input_positions
+        self.tp.pickNPlace(input_positions)
+        # self.tp.pickNPlace()
+
+
 
     def pickNStack(self):
         self.current_state = "pickNStack"

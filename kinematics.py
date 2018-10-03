@@ -11,7 +11,7 @@ There are some functions to start with, you may need to implement a few more
 
 """
 input = [[1],[2],[3],[4]]
-x_off = 304.88  # distances from center of the bottom of ReArm to world origin
+x_off = 304  # distances from center of the bottom of ReArm to world origin
 y_off = 301.5
 
 def FK_dh(joint_angles, link):
@@ -227,6 +227,9 @@ def IK(pose):
     return the required joint angles
 
     """
+
+def next_phi(joints):
+    return 0-joints[3] + pi/2.0 - joints[1] - joints[2]
 
 
 def get_euler_angles_from_T(T):

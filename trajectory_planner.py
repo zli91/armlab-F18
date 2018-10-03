@@ -4,6 +4,7 @@ from rexarm import Rexarm as rexarm
 from kinect import Kinect as kinect
 import csv
 import math
+from kinematics import *
 
 """
 TODO: build a trajectory generator and waypoint planner 
@@ -15,13 +16,14 @@ class TrajectoryPlanner():
     def __init__(self, rexarm):
         self.idle = True
         self.rexarm = rexarm
+        self.kinect = kinect
         self.num_joints = 4
         self.initial_wp = [0.0]*4
         self.final_wp = [0.0]*4
         self.dt = 0.05 # command rate
         self.wp = [];
         self.T = 0;
-        self.time_factor = 8 # determines the total time motor takes from one point to the other
+        self.time_factor = 6 # determines the total time motor takes from one point to the other
         self.look_ahead = 8 # determines how much time to look ahead when planning
 
     def set_initial_wp(self):
@@ -48,13 +50,29 @@ class TrajectoryPlanner():
     def go(self, max_speed = 2.5):
         qt0 = self.initial_wp[:]
         qtf = self.final_wp[:]
+
+        # add gripper positions to pos
+        pos = self.final_wp[:]
+        if (self.rexarm.gripper_open == True): # gripper open
+            pos.append(0)
+            pos.append(1.51)
+        else:
+            pos.append(0)
+            pos.append(0)
+
+        print "final_wp:", qtf
         print ("calculating time needed")
         self.calc_time_from_waypoints(self.initial_wp, self.final_wp)
         # self.T = float(2)
+        if (self.T<0.01):
+            self.rexarm.set_positions(pos)
+            return
+
         print("calculating cubic spline")
         coeffs = self.generate_cubic_spline(self.initial_wp, self.final_wp, self.T)[:]
         print("moving")
         vt = [0.00001,0.00001,0.000001,0.00001]
+
 
         num_intervals = int(self.T/0.08);
         if (num_intervals < 4):
@@ -77,12 +95,7 @@ class TrajectoryPlanner():
         writeResult = csv.writer(resultFile, delimiter=',')
         # writeResultVel = csv.writer(resultFileVel, delimiter=',')
         
-        # add gripper positions to pos
-        current_pos = self.rexarm.get_positions()[:]
         time_begin = time.time();
-        pos = self.final_wp[:]
-        pos.append(current_pos[4])
-        pos.append(current_pos[5])
 
         self.rexarm.set_positions(pos)
         self.rexarm.pause(time_interval-self.look_ahead/1000)
@@ -94,7 +107,7 @@ class TrajectoryPlanner():
             # cur_time = time.time() - time_begin;
             for k in range(len(qt0)):
                 vt[k] = (coeffs[k][1] + 2*coeffs[k][2]*cur_time + 3*coeffs[k][3]*cur_time*cur_time)/1.8
-                current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
+                # current_pos[k] = coeffs[k][0] + coeffs[k][1]*cur_time + coeffs[k][2]*cur_time*cur_time + coeffs[k][3]*cur_time*cur_time*cur_time
             vt.append(20)
             vt.append(20)
             self.rexarm.set_speeds(vt)
@@ -103,11 +116,11 @@ class TrajectoryPlanner():
 
             # self.rexarm.set_positions(current_pos)
             write_pos = self.rexarm.get_positions()[:]
-            write_pos+=current_pos[:]
+            # write_pos+=current_pos[:]
             write_pos.append(time.time()-time_begin)
             writeResult.writerow(write_pos)
-        # self.rexarm.pause(time_interval)
-        self.rexarm.set_positions(pos)
+        self.rexarm.pause(time_interval)
+        # self.rexarm.set_positions(pos)
         resultFile.close()
         print "complete moving"
         return True
@@ -137,7 +150,7 @@ class TrajectoryPlanner():
             conditions = [self.initial_wp[i], 0, self.final_wp[i], 0]
             temp = np.dot(np.linalg.inv(cubic_matrix),np.transpose(conditions))
             coeffs.append(temp[:])
-        print coeffs
+        # print coeffs
         return coeffs
 
 
@@ -186,21 +199,85 @@ class TrajectoryPlanner():
                 self.final_wp = self.wp.pop(0);
                 self.go();
                 self.initial_wp = self.rexarm.get_positions()[0:4];
-            self.rexarm.get_positions()[:]
             self.close_gripper()
-        return True
 
     def execute_plan_and_place(self, look_ahead=8):
         # print([max_speed]*len(self.rexarm.joints))
         # self.rexarm.set_speeds(self, [max_speed]*4)
         if len(self.wp)!= 0:
-            self.close_gripper()
             # self.initial_wp = self.wp[0];
             self.initial_wp = self.rexarm.get_positions()[0:4]
             while (len(self.wp)!=0):
                 self.final_wp = self.wp.pop(0);
                 self.go();
                 self.initial_wp = self.rexarm.get_positions()[0:4];
-            self.rexarm.get_positions()[:]
             self.open_gripper()
-        return True
+
+    def pickNPlace(self, positions):
+        # x_off = 304  # distances from center of the bottom of ReArm to world origin
+        # y_off = 301.5
+        # phi = -np.pi/2
+        # self.kinect.blockDetector()
+        # input_positions = []
+        # for i in range(len(positions)):
+        #     # grab the block
+        #     cur_pos = self.rexarm.get_positions()[:]
+        #     world_coord = self.kinect.world_coord(positions[i][0],positions[i][1]);
+        #     joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+            
+        #     joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+        #     self.wp.append(world_coord[:])
+        #     self.wp.append(joints_rot[:])
+        #     self.execute_plan_and_grab()
+
+        #     # place the block
+        #     self.wp.append(joints_rot[:])
+        #     joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+        #     world_coord_p = [world_coord[0]-x_off+world_coord[0], world_coord[1]-y_off+world_coord[1], world_coord[2]-20, phi]
+        #     joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+        #     self.wp.append(world_coord_p[:])
+        #     self.wp.append(joints_rot[:])
+        #     self.execute_plan_and_place()
+        # self.tp.pickNPlace(input_positions)
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        phi = -np.pi/2
+        pick = True
+        pre_pos = self.rexarm.get_positions()[0:4]
+        first = True
+        while(len(positions)>0):
+            if (pick==True and first==True):
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(pre_pos)
+                self.add_wp(cur_pos)
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(cur_pos)
+                self.execute_plan_and_grab()
+                pre_pos = cur_pos[:]
+                pick = False;
+            elif (pick==True):
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(pre_pos)
+                self.add_wp(cur_pos)
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(cur_pos)
+                self.execute_plan_and_grab()
+                pre_pos = cur_pos[:]
+                pick = False;
+            else:
+                self.add_wp(pre_pos)
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(cur_pos)
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(cur_pos)
+                self.execute_plan_and_place()
+                pre_pos = cur_pos[:]
+                pick = True
+        self.add_wp([0,0,0,0])
+        self.execute_plan()
+
+
+
+
+
+            
