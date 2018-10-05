@@ -145,17 +145,22 @@ def IK(pose):
     Xw,pose=np.split(pose,[1])
     Yw,pose=np.split(pose,[1])
     Ze,phi=np.split(pose,[1])
-    if phi>0:
-        print 'error: phi must be negative according to convention'
-        return 0
+    # if phi>0:
+    #     print 'error: phi must be negative according to convention'
+    #     return 0
+
     Ye = -(float(Xw)-x_off)
     Xe = float(Yw)-y_off
+    Re = (Xe**2 + Ye**2)**0.5
     Ze = float(Ze) - d1
     phi = float(phi)
+    if (Re**2+Ze**2)**0.5)>341.6:
+        print 'Position too far'
+        return [0,0,0,0]
     
     #parameters:
     
-    Re = (Xe**2 + Ye**2)**0.5
+
     dR = Re - a4*cos(-phi)
     dR = Re - a4*cos(phi)
     dZ = Ze + a4*sin(-phi)
@@ -172,7 +177,6 @@ def IK(pose):
         except ValueError:
             phi += pi/180
             print 'phi too stiff, modyfied to',phi*180/pi,'degree'
-            Re = (Xe**2 + Ye**2)**0.5
             dR = Re - a4*cos(-phi)
             dR = Re - a4*cos(phi)
             dZ = Ze + a4*sin(-phi)
@@ -203,7 +207,7 @@ def IK(pose):
     th4 = phi - th2 - th3
 
     # print 'th1:',th1
-    # print 'th4:',th4
+    # print 'th4:',th4grayThreshold
     # print 'th2:',th2
     # print 'th3:',th3
     
@@ -227,7 +231,7 @@ def IK(pose):
     return the required joint angles
 
     """
-
+grayThreshold
 def next_phi(joints):
     return 0-joints[3] + pi/2.0 - joints[1] - joints[2]
 
