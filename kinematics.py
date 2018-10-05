@@ -154,7 +154,7 @@ def IK(pose):
     Re = (Xe**2 + Ye**2)**0.5
     Ze = float(Ze) - d1
     phi = float(phi)
-    if (Re**2+Ze**2)**0.5)>341.6:
+    if ((Re**2+Ze**2)**0.5)>341.6:
         print 'Position too far'
         return [0,0,0,0]
     
@@ -231,7 +231,7 @@ def IK(pose):
     return the required joint angles
 
     """
-grayThreshold
+# grayThreshold
 def next_phi(joints):
     return 0-joints[3] + pi/2.0 - joints[1] - joints[2]
 

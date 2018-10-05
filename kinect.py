@@ -51,6 +51,7 @@ class Kinect():
             self.loadVideoFrame()
 
     def world_coord(self, x, y):
+        self.captureDepthFrame()
         height_y = 920.5
         height_x = 918.5
         # check if cv is calibrated
@@ -61,7 +62,11 @@ class Kinect():
             return
         # calculate the coordinates
         mouse_coor = [x,y,1]
+        # print "to world mouse coor"
+        # print mouse_coor
         world_coord = np.matmul(self.convert_to_world, mouse_coor)
+        # print "converted world coord: "
+        # print world_coord
         # x and y coordinates converting to board without pinhole correction
         cam_X = world_coord[0]
         cam_Y = world_coord[1]
@@ -74,8 +79,46 @@ class Kinect():
         d = float((self.y_off-cam_Y)*(height_y-world_Z)/height_y)
         world_Y = self.y_off-d
         
+        # print "world coord after pin hole"
+        # print [world_X, world_Y, world_Z]
         return [world_X, world_Y, world_Z]
+        # return [cam_X,cam_Y,world_Z]
 
+    def world_coord_tp(self, x, y):
+        self.captureDepthFrame()
+        height_y = 920.5
+        height_x = 918.5
+        # check if cv is calibrated
+        if (self.kinectCalibrated == True):
+            z = self.currentDepthFrame[y][x]
+        else:
+            print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
+            return
+        print "camera z:"
+        print z
+        # calculate the coordinates
+        mouse_coor = [x,y,1]
+        print "to world mouse coor"
+        print mouse_coor
+        world_coord = np.matmul(self.convert_to_world, mouse_coor)
+        print "converted world coord: "
+        print world_coord
+        # x and y coordinates converting to board without pinhole correction
+        cam_X = world_coord[0]
+        cam_Y = world_coord[1]
+        # actual dheight above board of current point
+        world_Z = self.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+        # converting x in pinhold to x in world
+        # d = float((self.x_off-cam_X)*(height_x-world_Z)/height_x)
+        # world_X = self.x_off-d;
+        # # converting y in pinhole to y in world
+        # d = float((self.y_off-cam_Y)*(height_y-world_Z)/height_y)
+        # world_Y = self.y_off-d
+        
+        # print "world coord after pin hole"
+        # print [world_X, world_Y, world_Z]
+        # return [world_X, world_Y, world_Z]
+        return [world_coord[0], world_coord[1], world_Z]
 
 
     def processVideoFrame(self):
@@ -128,7 +171,7 @@ class Kinect():
             """ 
             Convert Depth frame to rudimentary colormap
             """
-            self.DepthHSV[...,0] = self.currentDepthFrame
+            self.DepthHSV[...,0] = self.currentDepthFrame[:]
             self.DepthHSV[...,1] = 0x9F
             self.DepthHSV[...,2] = 0xFF
             self.DepthCM = cv2.cvtColor(self.DepthHSV,cv2.COLOR_HSV2RGB)
@@ -249,9 +292,9 @@ class Kinect():
             centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
 
             # # find if center is in world frame
-            centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])
+            centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])[:]
             
-            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] < 375 and 250 < centerCoordInWorld[1] < 390):
+            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] and centerCoordInWorld[0] < 390 and 220 < centerCoordInWorld[1] and centerCoordInWorld[1] < 375):
                 continue
             
             # color detection points array

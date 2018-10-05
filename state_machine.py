@@ -290,7 +290,7 @@ class StateMachine():
     def clickNGrab(self):
         self.current_state = "clickNGrab"
         self.next_state = "idle"
-
+        self.kinect.new_click = False;
         pos_list = []
 
         # wait for mouse click
@@ -345,7 +345,7 @@ class StateMachine():
         # world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
         # world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
         world_coord = self.kinect.world_coord(x,y);
-        position = IK([world_coord[0], world_coord[1], world_coord[2]+20, phi])
+        position = IK([world_coord[0], world_coord[1], world_coord[2]+20, phi])[:]
         position_rot = [position[0], cur_pos[1], cur_pos[2], cur_pos[3]]
         # position_top = IK([world_coord[0], world_coord[1], 200, phi])
 
@@ -378,33 +378,27 @@ class StateMachine():
             x = positions[i][0]
             y = positions[i][1]
 
-            if (self.kinect.kinectCalibrated == True):
-                z = self.kinect.currentDepthFrame[y][x]
-            else:
-                print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
-                return
-            # calculate the coordinates
-            mouse_coor = [x,y,1]
-            world_coord = np.matmul(self.kinect.convert_to_world, mouse_coor)
-            # actual dheight above board of current point
-            world_Z = self.kinect.worldHeight - 0.1236 * 1000 * np.tan(z/2842.5 + 1.1863)
+            print "X", x
+            print "y", y
+            world_coord = self.kinect.world_coord(x,y)[:]
             print "world coord converted"
-            print world_coord, world_Z
+            print world_coord
 
-            joints = IK([world_coord[0], world_coord[1], world_Z, phi])
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])[:]
             
             joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
             input_positions.append(joints[:])
 
             # place the block
-            world_coord_p = [x_off-(world_coord[0] - x_off), y_off - (world_coord[1] - y_off), world_coord[2]-20, phi]
-            joints_p = IK([world_coord_p[0], world_coord_p[1], world_coord_p[2]-20, phi])
+            world_coord_p = [x_off-(world_coord[0] - x_off), y_off - (world_coord[1] - y_off), 40, phi]
+            joints_p = IK([world_coord_p[0], world_coord_p[1], world_coord_p[2]-15, phi])[:]
             joints_rot = [joints_p[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
             input_positions.append(joints_p[:])
         print "input:"
         print input_positions
+        self.rexarm.pause(3)
         self.tp.pickNPlace(input_positions)
         # self.tp.pickNPlace()
 
@@ -414,7 +408,42 @@ class StateMachine():
         self.current_state = "pickNStack"
         self.next_state = "idle"
         self.status_message = "State: Pick n' Stack"
-        self.rexarm.pause(2)
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        phi = -np.pi/2
+        des_pos_x = 150
+        des_pos_y = 150
+        des_pos_z = 25
+        positions = self.kinect.blockDetector()[:]
+        input_positions = []
+        for i in range(len(positions)):
+            print "camera position detected"
+            print positions[i]
+            # grab the block
+            cur_pos = [0,0,0,0]
+            x = positions[i][0]
+            y = positions[i][1]
+
+            world_coord = self.kinect.world_coord(x,y)
+
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+            
+            joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+            input_positions.append(joints_rot[:])
+            input_positions.append(joints[:])
+
+            # place the block
+            phi = next_phi(joints)
+            world_coord_p = [des_pos_x, des_pos_y, des_pos_z, phi]
+            joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+            joints_rot = [joints_p[0], cur_pos[1], cur_pos[2], cur_pos[3]]
+            input_positions.append(joints_rot[:])
+            input_positions.append(joints_p[:])
+            des_pos_z = des_pos_z+40
+        print "input:"
+        print input_positions
+        self.tp.pickNPlace(input_positions)
+        # self.tp.pickNPlace()
 
     def lineUp(self):
         self.current_state = "lineUp"

@@ -60,17 +60,17 @@ class TrajectoryPlanner():
             pos.append(0)
             pos.append(0)
 
-        print "final_wp:", qtf
-        print ("calculating time needed")
+        # print "final_wp:", qtf
+        # print ("calculating time needed")
         self.calc_time_from_waypoints(self.initial_wp, self.final_wp)
         # self.T = float(2)
         if (self.T<0.01):
             self.rexarm.set_positions(pos)
             return
 
-        print("calculating cubic spline")
+        # print("calculating cubic spline")
         coeffs = self.generate_cubic_spline(self.initial_wp, self.final_wp, self.T)[:]
-        print("moving")
+        # print("moving")
         vt = [0.00001,0.00001,0.000001,0.00001]
 
 
@@ -138,7 +138,7 @@ class TrajectoryPlanner():
             qf = self.final_wp[i]
             q0 = self.initial_wp[i]
             time = max(time, abs((qf-q0)*self.time_factor/max_velocity[i]))
-            print "time: ", time
+            # print "time: ", time
         self.T = float(time)
 
     # used in go(). returns the cooefficients in cubic spline
@@ -250,29 +250,32 @@ class TrajectoryPlanner():
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(pre_pos)
                 self.add_wp(cur_pos)
+                pre_pos = cur_pos[:]
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(cur_pos)
                 self.execute_plan_and_grab()
-                pre_pos = cur_pos[:]
+                # pre_pos = cur_pos[:]
                 pick = False;
             elif (pick==True):
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(pre_pos)
                 self.add_wp(cur_pos)
+                pre_pos = cur_pos[:]
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(cur_pos)
                 self.execute_plan_and_grab()
-                pre_pos = cur_pos[:]
+                # pre_pos = cur_pos[:]
                 pick = False;
             else:
                 self.add_wp(pre_pos)
                 cur_pos = positions.pop(0)[:]
+                pre_pos = cur_pos[:]
                 self.add_wp(cur_pos)
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(cur_pos)
                 self.execute_plan_and_place()
-                pre_pos = cur_pos[:]
                 pick = True
+        self.add_wp(pre_pos)
         self.add_wp([0,0,0,0])
         self.execute_plan()
 
