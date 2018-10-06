@@ -53,11 +53,17 @@ class TrajectoryPlanner():
 
         # add gripper positions to pos
         pos = self.final_wp[:]
-        if (self.rexarm.gripper_open == True): # gripper open
+
+        # if the gripper is toggled
+        if (self.rexarm.toggle_gripper == False):
             pos.append(0)
-            pos.append(1.51)
         else:
-            pos.append(0)
+            pos.append(np.pi/2)
+
+        # if the gripper is open
+        if (self.rexarm.gripper_open == True): # gripper open
+            pos.append(1.2)
+        else:
             pos.append(0)
 
         # print "final_wp:", qtf
@@ -279,8 +285,37 @@ class TrajectoryPlanner():
         self.add_wp([0,0,0,0])
         self.execute_plan()
 
-
-
+    def lineUp(self, positions):
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        phi = -np.pi/2
+        pick = True
+        pre_pos = [0,0,0,0] # start position
+        first = True
+        cur_pos = []
+        cur_pos_rot = []
+        while(len(positions)>0):
+            if (pick==True):
+                cur_pos = positions.pop(0)[:]
+                self.add_wp(pre_pos)
+                cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
+                self.add_wp(cur_pos_rot)
+                pre_pos = cur_pos_rot[:]
+                self.add_wp(cur_pos)
+                self.execute_plan_and_grab()
+                pick = False;
+            else:
+                cur_pos = positions.pop(0)[:]
+                cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
+                self.add_wp(cur_pos_rot)
+                pre_pos = cur_pos_rot[:]
+                self.add_wp(cur_pos_rot)
+                self.add_wp(cur_pos)
+                self.execute_plan_and_place()
+                pick = True
+        self.add_wp(pre_pos)
+        self.add_wp([0,0,0,0])
+        self.execute_plan()
 
 
             
