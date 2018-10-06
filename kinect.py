@@ -32,6 +32,11 @@ class Kinect():
 
         self.blockMessage = False
 
+        self.detectDepth = []
+        self.detectedCubeColor = []
+        self.cubeOrient = []
+        
+
         """ Extra arrays for colormaping the depth image"""
         self.DepthHSV = np.zeros((480,640,3)).astype(np.uint8)
         self.DepthCM=np.array([])
@@ -249,7 +254,7 @@ class Kinect():
         blocks in 3D space
         """
         self.detectBlocksInDepthImage()
-        cubeColor = ['yellow','orange','pink','black','red','purple','green','blue']
+        cubeColor = ['black','red','orange','yellow','green','blue','purple','pink']
         # rgbBoundaries = [ # b,g,r
         #     ([4, 160, 240], [50, 210, 253]), # yellow
         #     ([10, 85, 195], [30, 130, 205]), # orange
@@ -261,14 +266,14 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([20, 30, 101], [40, 255, 255]), # yellow
-            ([0, 30, 101], [15, 255, 255]), # orange
-            ([160, 90, 230], [180, 170, 255]), # pink
             ([0, 0, 70], [255, 255, 100]), # black
             ([160, 165, 140], [180, 255, 200]), # red
-            ([120, 20, 130], [155, 130, 220]), # purple
+            ([0, 30, 101], [15, 255, 255]), # orange
+            ([20, 30, 101], [40, 255, 255]), # yellow
             ([45, 50, 120],[80, 120, 170]), # green
-            ([100, 100, 160], [130, 190, 200]) # blue
+            ([100, 100, 160], [130, 190, 200]), # blue
+            ([120, 20, 130], [155, 130, 220]), # purple
+            ([160, 90, 230], [180, 170, 255]), # pink
             ]
 
         ### color detection in rgb image
@@ -277,69 +282,78 @@ class Kinect():
         # b = self.rgbImage[centerY][centerX][0]
 
         self.cubeCenter = []
-        self.detectedCubeColor = []
+        del self.detectedCubeColor[:]
         colorDetectionPoints = []
         self.cubeContours = []
         self.rectVertex = []
-        self.cubeOrient = []
+        del self.cubeOrient[:]
         self.vertexCoordInWorld = []
         camera_coord = []
+
+        for j in range(len(hsvBoundaries)):
+            (lower,upper) = hsvBoundaries[j]
+            lower = np.array(lower, dtype="uint8")
+            upper = np.array(upper, dtype="uint8")        
         
-        for i in range(len(self.contours)):        
-            # find center of mass
-            cubeMoment = cv2.moments(self.contours[i])
-            centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
-            centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
+            for i in range(len(self.contoursByDepth)):        
+                # find center of mass
+                cubeMoment = cv2.moments(self.contoursByDepth[i])
+                centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
+                centerY = int(cubeMoment["m01"] / cubeMoment["m00"])
 
-            # # find if center is in world frame
-            centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])[:]
+                # # find if center is in world frame
+                centerCoordInWorld = np.matmul(self.convert_to_world, [centerX,centerY,1])[:]
             
-            if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] and centerCoordInWorld[0] < 390 and 220 < centerCoordInWorld[1] and centerCoordInWorld[1] < 375):
-                continue
+                if centerCoordInWorld[0] < 0 or centerCoordInWorld[0] > 608 or centerCoordInWorld[1] < 0 or centerCoordInWorld[1] > 603.25 or (220 < centerCoordInWorld[0] and centerCoordInWorld[0] < 390 and 220 < centerCoordInWorld[1] and centerCoordInWorld[1] < 375):
+                    continue
             
-            # color detection points array
-            colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
-                (centerX-2,centerY-3), (centerX-2,centerY-2), (centerX-2,centerY-1), (centerX-2,centerY), (centerX-2,centerY+1), (centerX-2,centerY+2), (centerX-2,centerY+3), 
-                (centerX-1,centerY-3), (centerX-1,centerY-2), (centerX-1,centerY-1), (centerX-1,centerY), (centerX-1,centerY+1), (centerX-1,centerY+2), (centerX-1,centerY+3), 
-                (centerX,centerY-3), (centerX,centerY-2), (centerX,centerY-1), (centerX,centerY), (centerX,centerY+1), (centerX,centerY+2), (centerX,centerY+3), 
-                (centerX+1,centerY-3), (centerX+1,centerY-2), (centerX+1,centerY-1), (centerX+1,centerY), (centerX+1,centerY+1), (centerX+1,centerY+2), (centerX+1,centerY+3),
-                (centerX+2,centerY-3), (centerX+2,centerY-2), (centerX+2,centerY-1), (centerX+2,centerY), (centerX+2,centerY+1), (centerX+2,centerY+2), (centerX+2,centerY+3),
-                (centerX+3,centerY-3), (centerX+3,centerY-2), (centerX+3,centerY-1), (centerX+3,centerY), (centerX+3,centerY+1), (centerX+3,centerY+2), (centerX+3,centerY+3),
-                ]
-            hSum = 0
-            sSum = 0
-            vSum = 0
-            hAve = 0
-            sAve = 0
-            vAve = 0
-            for k in range(len(colorDetectionPoints)):
-                # find hsv
-                h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
-                s = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
-                v = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
-                hSum = hSum + h
-                sSum = sSum + s
-                vSum = vSum + v
-            hAve = hSum/len(colorDetectionPoints)
-            sAve = sSum/len(colorDetectionPoints)
-            vAve = vSum/len(colorDetectionPoints)
+                # color detection points array
+                colorDetectionPoints = [(centerX-3,centerY-3), (centerX-3,centerY-2), (centerX-3,centerY-1), (centerX-3,centerY), (centerX-3,centerY+1), (centerX-3,centerY+2), (centerX-3,centerY+3), 
+                    (centerX-2,centerY-3), (centerX-2,centerY-2), (centerX-2,centerY-1), (centerX-2,centerY), (centerX-2,centerY+1), (centerX-2,centerY+2), (centerX-2,centerY+3), 
+                    (centerX-1,centerY-3), (centerX-1,centerY-2), (centerX-1,centerY-1), (centerX-1,centerY), (centerX-1,centerY+1), (centerX-1,centerY+2), (centerX-1,centerY+3), 
+                    (centerX,centerY-3), (centerX,centerY-2), (centerX,centerY-1), (centerX,centerY), (centerX,centerY+1), (centerX,centerY+2), (centerX,centerY+3), 
+                    (centerX+1,centerY-3), (centerX+1,centerY-2), (centerX+1,centerY-1), (centerX+1,centerY), (centerX+1,centerY+1), (centerX+1,centerY+2), (centerX+1,centerY+3),
+                    (centerX+2,centerY-3), (centerX+2,centerY-2), (centerX+2,centerY-1), (centerX+2,centerY), (centerX+2,centerY+1), (centerX+2,centerY+2), (centerX+2,centerY+3),
+                    (centerX+3,centerY-3), (centerX+3,centerY-2), (centerX+3,centerY-1), (centerX+3,centerY), (centerX+3,centerY+1), (centerX+3,centerY+2), (centerX+3,centerY+3),
+                    ]
+                hSum = 0
+                sSum = 0
+                vSum = 0
+                hAve = 0
+                sAve = 0
+                vAve = 0
+                lenAve = 0
 
-            for j in range(len(hsvBoundaries)):
-                (lower,upper) = hsvBoundaries[j]
-                lower = np.array(lower, dtype="uint8")
-                upper = np.array(upper, dtype="uint8")
+                for k in range(len(colorDetectionPoints)):
+                    # find hsv
+                    h = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][0]
+                    s = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][1]
+                    v = self.hsvImage[colorDetectionPoints[k][1]][colorDetectionPoints[k][0]][2]
+                    hSum = hSum + h
+                    sSum = sSum + s
+                    vSum = vSum + v
+                hAve = hSum/len(colorDetectionPoints)
+                sAve = sSum/len(colorDetectionPoints)
+                vAve = vSum/len(colorDetectionPoints)
+
                 if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
                     # define colors
                     self.detectedCubeColor.append(cubeColor[j])
                     # record contours
-                    self.cubeContours.append(self.contours[i])
+                    self.cubeContours.append(self.contoursByDepth[i])
                     # record center coords
                     self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
                     camera_coord.append([centerX,centerY])
                     # approximate bounding rectangle
-                    rect = cv2.minAreaRect(self.contours[i])
+                    rect = cv2.minAreaRect(self.contoursByDepth[i])
                     box = cv2.boxPoints(rect)
                     box = np.int0(box)
+
+                    # judge if contour is cube # cube length in mouse coord: at least 19
+                    lenAve = (((box[0][0]-box[1][0])**2+(box[0][1]-box[1][1])**2)**0.5+((box[0][0]-box[3][0])**2+(box[0][1]-box[3][1])**2)**0.5)
+                    if int(lenAve) < 42:
+                        continue
+
                     # record vertexs
                     self.rectVertex.append(box)
                     # vertex coords in world frame
@@ -382,16 +396,23 @@ class Kinect():
         # use grayscale in depth to measure the depth of object
 
         # detect object
-        (grayLower,grayUpper) = (150, 178)
-        grayLower = np.array(grayLower,dtype = "uint8")
-        grayUpper = np.array(grayUpper,dtype = "uint8")
-        grayThreshold = cv2.inRange(depthImage,grayLower,grayUpper)
-        # dilation
-        kernel = np.ones((5,5),np.uint8)
-        grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
-        # find countors
-        _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        grayBoundaries = [
+            # (160,169), # 3st layer
+            # (170,173), # 2st layer
+            (174,177)] # 1st layer
+        self.contoursByDepth = np.array([])
 
+        for i in range(len(grayBoundaries)):
+            (grayLower,grayUpper) = grayBoundaries[i]
+            grayLower = np.array(grayLower,dtype = "uint8")
+            grayUpper = np.array(grayUpper,dtype = "uint8")
+            grayThreshold = cv2.inRange(depthImage,grayLower,grayUpper)
+            # dilation
+            kernel = np.ones((5,5),np.uint8)
+            grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
+            # find countors
+            _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            self.contoursByDepth = np.append(self.contoursByDepth,self.contours)
 
         return None
 
