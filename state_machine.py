@@ -102,15 +102,13 @@ class StateMachine():
             else:
                 self.idle()
 
-        # if(self.current_state == "blockDetectionEnd"):
-        #     if(self.next_state == "idle"):
-        #         self.idle()
+        if(self.current_state == "blockDetectionEnd"):
+            if(self.next_state == "idle"):
+                self.idle()
 
         # if(self.current_state == "blockDetectionStart"):
-            
-
-        if(self.current_state == "blockDetectionEnd"):
-            self.idle();
+        # if(self.current_state == "blockDetectionEnd"):
+        #     self.idle();
 
         if (self.current_state == "teachNRepeat"):
             if(self.next_state == "teachNRepeat"):
