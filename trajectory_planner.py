@@ -249,20 +249,20 @@ class TrajectoryPlanner():
         y_off = 301.5
         phi = -np.pi/2
         pick = True
-        pre_pos = self.rexarm.get_positions()[0:4]
+        pre_pos = [0,0,0,0]
         first = True
         while(len(positions)>0):
-            if (pick==True and first==True):
-                cur_pos = positions.pop(0)[:]
-                self.add_wp(pre_pos)
-                self.add_wp(cur_pos)
-                pre_pos = cur_pos[:]
-                cur_pos = positions.pop(0)[:]
-                self.add_wp(cur_pos)
-                self.execute_plan_and_grab()
-                # pre_pos = cur_pos[:]
-                pick = False;
-            elif (pick==True):
+            # if (pick==True and first==True):
+            #     cur_pos = positions.pop(0)[:]
+            #     self.add_wp(pre_pos)
+            #     self.add_wp(cur_pos)
+            #     pre_pos = cur_pos[:]
+            #     cur_pos = positions.pop(0)[:]
+            #     self.add_wp(cur_pos)
+            #     self.execute_plan_and_grab()
+            #     # pre_pos = cur_pos[:]
+            #     pick = False;
+            if (pick==True):
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(pre_pos)
                 self.add_wp(cur_pos)
@@ -286,12 +286,8 @@ class TrajectoryPlanner():
         self.execute_plan()
 
     def lineUp(self, positions):
-        x_off = 304  # distances from center of the bottom of ReArm to world origin
-        y_off = 301.5
-        phi = -np.pi/2
         pick = True
         pre_pos = [0,0,0,0] # start position
-        first = True
         cur_pos = []
         cur_pos_rot = []
         while(len(positions)>0):
@@ -316,6 +312,3 @@ class TrajectoryPlanner():
         self.add_wp(pre_pos)
         self.add_wp([0,0,0,0])
         self.execute_plan()
-
-
-            

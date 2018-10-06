@@ -93,14 +93,24 @@ class StateMachine():
                 self.blockDetectionStart()
             if(self.next_state == "blockMessage"):
                 self.blockMessage()
+            if(self.next_state == "blockDetectionEnd"):
+                self.blockDetectionEnd()
 
         if(self.current_state == "blockMessage"):
             if(self.next_state == "blockDetectionStart"):
                 self.blockDetectionStart()
+            else:
+                self.idle()
+
+        # if(self.current_state == "blockDetectionEnd"):
+        #     if(self.next_state == "idle"):
+        #         self.idle()
+
+        # if(self.current_state == "blockDetectionStart"):
+            
 
         if(self.current_state == "blockDetectionEnd"):
-            if(self.next_state == "idle"):
-                self.idle()
+            self.idle();
 
         if (self.current_state == "teachNRepeat"):
             if(self.next_state == "teachNRepeat"):
@@ -109,15 +119,9 @@ class StateMachine():
                 self.recordWaypoint()
             if(self.next_state == "play"):
                 self.play()
-            if(self.next_state == "idle"):
+            else:
+            # if(self.next_state == "idle"):
                 self.idle()
-
-        if(self.current_state == "blockDetectionStart"):
-            if(self.next_state == "blockDetectionEnd"):
-                self.blockDetectionEnd()
-
-        if(self.current_state == "blockDetectionEnd"):
-            self.idle();
 
         if(self.current_state == "clickNGrab"):
             if(self.next_state == "idle"):
@@ -255,6 +259,7 @@ class StateMachine():
         # calculate the affine transformation from rgb to world
         world_affine = self.kinect.getAffineTransform(self.kinect.rgb_click_points, world_coordinates, 4)
         self.kinect.convert_to_world = np.append(world_affine, [[0, 0, 1]], axis=0)
+        self.kinect.convert_to_cam = np.linalg.inv(self.kinect.convert_to_world)
 
         matrix_in = self.kinect.loadCameraCalibration()
         self.kinect.kinectCalibrated = True
@@ -359,7 +364,6 @@ class StateMachine():
         self.tp.add_wp(position_rot[:])
         self.tp.add_wp([0,0,0,0])
         self.tp.execute_plan()
-
 
     def pickNPlace(self):
         self.current_state = "pickNPlace"
@@ -472,6 +476,9 @@ class StateMachine():
         phi = -np.pi/2
         des_pos_z = 25
         positions = []
+        """
+        TODO: ask for the ranges
+        """
         depthRange = [[],[],[]] # TODO: ask for the ranges
         # positions input into tp
         input_positions = []
@@ -507,10 +514,101 @@ class StateMachine():
         self.current_state = "stackHigh"
         self.next_state = "idle"
         self.status_message = "State: Stack 'em High"
-        self.rexarm.pause(2)
+
+        self.kinect.new_click = False;
+        all_colors = ["black", "red", "orange", "yellow", "green", "blue", "violet", "pink"]
+
+        # wait for mouse click
+        while (self.kinect.new_click==False): 
+            self.status_message = "State: Stack 'em High - waiting for mouse click for starting location"
+        phi = -np.pi/2
+        des_pos_x = self.kinect.last_click[0]
+        des_pos_y = self.kinect.last_click[1]
+        self.kinect.new_click = False;
+
+        phi = -np.pi/2
+        des_pos_z = 25
+        positions = []
+        """
+        TODO: ask for the ranges
+        """
+        depthRange = [[],[],[]] 
+        # positions input into tp
+        input_positions = []
+        
+        # step one: put all blocks on board
+        for j in range(len(depthRange)-1):
+            depthMin = depthRange[j][0]
+            depthMax = depthRange[j][1]
+            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+            for i in range(len(positions)):
+                # block location
+                x = positions[i][0]
+                y = positions[i][1]
+                world_coord = self.kinect.world_coord(x,y)
+                joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+                input_positions.append(joints[:])
+
+                # x coordinate to place the block
+                des_pos = next_loc(world_coord[0], world_coord[1])
+                # place location
+                phi = next_phi(joints)
+                world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+                joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+                input_positions.append(joints_p[:])
+
+            print input_positions
+            self.tp.lineUp(input_positions)
+
+        # step two: stack
+        positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+        for i in range(len(positions)):
+            x = positions[i][0]
+            y = positions[i][1]
+            world_coord = self.kinect.world_coord(x,y)
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+            input_positions.append(joints[:])
+
+            # place location
+            phi = next_phi(joints)
+            world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+            joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+            input_positions.append(joints_p[:])
+            des_pos_z += 40
+        self.tp.lineUp(input_positions)
 
     def buildPyramid(self):
         self.current_state = "buildPyramid"
         self.next_state = "idle"
         self.status_message = "State: Pyramid Builder"
         self.rexarm.pause(2)
+
+    # helper function to find a empty place
+    def next_loc(self, x, y):
+        diff = 55
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        x_sign = 0
+        y_sign = 0
+        # the block is at the right half of the plane
+        if (x-x_off>0):
+            x_sign = -1
+        # block at left half of the plane
+        else:
+            x_sign = 1
+        # the block is at the top half of the plane
+        if (y-y_off>0):
+            x_sign = -1
+        # block at bottom half of the plane
+        else:
+            x_sign = 1
+        # find a close empty position to place the block
+        while (offset<200):
+            if (self.kinect.depthOf(x+x_sign*diff,y)<10):
+                return [x+x_sign*50,y]
+            elif (self.kinect.depthOf(x,y+y_sign*diff)<10):
+                return [x,y+y_sign*diff]
+            elif (self.kinect.depthOf(x+x_sign*diff/2,y+y_sign*diff/2)<10):
+                return [x+x_sign*diff/2,y+y_sign*diff/2]
+            diff += 20
+        return [150, 150] #default value

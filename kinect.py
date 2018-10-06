@@ -11,6 +11,7 @@ class Kinect():
         self.currentVideoFrame = np.array([])
         self.currentDepthFrame = np.array([])
         self.convert_to_world = np.array([])
+        self.convert_to_cam = np.array([])
         self.cubeContours = np.array([])
         if(freenect.sync_get_depth() == None):
             self.kinectConnected = False
@@ -416,5 +417,10 @@ class Kinect():
 
         return None
 
-
+    # takes in world coordinates and returns depth of that point
+    def depthOf(self,x,y):
+        world_coord = [x,y,1]
+        camera_coord = np.matmul(self.convert_to_cam, world_coord)
+        cam_Z = self.currentDepthFrame[camera_coord[1]][camera_coord[0]]
+        return self.worldHeight - 0.1236 * 1000 * np.tan(cam_Z/2842.5 + 1.1863)
 
