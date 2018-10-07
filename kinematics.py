@@ -144,7 +144,8 @@ def IK(pose):
     a4 = 143.6
     Xw,pose=np.split(pose,[1])
     Yw,pose=np.split(pose,[1])
-    Ze,phi=np.split(pose,[1])
+    Ze,pose=np.split(pose,[1])
+    phi,cubeOrient==np.split(pose,[1])
     # if phi>0:
     #     print 'error: phi must be negative according to convention'
     #     return 0
@@ -154,10 +155,31 @@ def IK(pose):
     Re = (Xe**2 + Ye**2)**0.5
     Ze = float(Ze) - d1
     phi = float(phi)
+
+    th1 = atan2(Ye,Xe)                                                      #theta 1 
+
     if ((Re**2+Ze**2)**0.5)>341.6:
         print 'Position too far'
         return [0,0,0,0]
-    
+    if (Re <= 220):
+        if th1 <=pi/2:
+            th1a = (pi/2)-th1
+            th5 = cubeOrient - th1a 
+        elif th1 <= pi:
+            th1a = th1 - pi/2
+            th5 = th1a - cubeOrient
+        elif th1 <= 3*pi/2:
+            th1a = (3*pi/2)-th1
+            th5 = cubeOrient - th1a    
+        elif th1 <= 2*pi:
+            th1a = th1 - 3*pi/2
+            th5 = th1a - cubeOrient
+    else:
+        th5 = 0
+
+
+
+
     #parameters:
     
 
@@ -167,7 +189,7 @@ def IK(pose):
     while True:
         try:
             if phi <= 0: 
-                th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))
+                th3 = -1*acos(round((dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3),6))    #theta 3
                 break
             else:
                 print 'position impossible to reach'
@@ -193,7 +215,7 @@ def IK(pose):
     
     beta = atan2(dZ,dR)
     #print 'beta:',beta
-    th1 = atan2(Ye,Xe)
+    
     # print 'dZ',dZ
     # print 'dR:',dR
     # print 'th3_cos:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
@@ -202,10 +224,9 @@ def IK(pose):
     
     alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
     #print 'alpha:',alpha
-    th2 = beta+alpha
+    th2 = beta+alpha                                                      #theta 2
     
-    th4 = phi - th2 - th3
-
+    th4 = phi - th2 - th3                                                  #theta 4
     # print 'th1:',th1
     # print 'th4:',th4grayThreshold
     # print 'th2:',th2
@@ -220,7 +241,7 @@ def IK(pose):
     th2r = pi/2 - th2
     th3r = -th3
     th4r = -th4
-    return[th1,th2r,th3r,th4r]
+    return[th1,th2r,th3r,th4r,th5]
     # phi = -th4r + (pi/2 - th2r) - th3r
     
     """
