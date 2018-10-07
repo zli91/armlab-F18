@@ -54,11 +54,8 @@ class TrajectoryPlanner():
         # add gripper positions to pos
         pos = self.final_wp[:]
 
-        # if the gripper is toggled
-        if (self.rexarm.toggle_gripper == False):
-            pos.append(0)
-        else:
-            pos.append(np.pi/2)
+        # how gripper is toggled
+        pos.append(self.rexarm.toggle_gripper)
 
         # if the gripper is open
         if (self.rexarm.gripper_open == True): # gripper open
@@ -292,6 +289,7 @@ class TrajectoryPlanner():
         cur_pos_rot = []
         while(len(positions)>0):
             if (pick==True):
+                self.rexarm.toggle_gripper(0)
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(pre_pos)
                 cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
@@ -301,6 +299,7 @@ class TrajectoryPlanner():
                 self.execute_plan_and_grab()
                 pick = False;
             else:
+                self.rexarm.toggle_gripper(np.pi/2)
                 cur_pos = positions.pop(0)[:]
                 cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
                 self.add_wp(cur_pos_rot)

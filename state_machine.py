@@ -144,6 +144,8 @@ class StateMachine():
         if(self.current_state == "buildPyramid"):
             if(self.next_state == "idle"):
                 self.idle()
+            if (self.next_state == "buildPyramid"):
+                self.idle()
 
 
     """Functions run for each state"""
@@ -580,6 +582,39 @@ class StateMachine():
         self.next_state = "idle"
         self.status_message = "State: Pyramid Builder"
         self.rexarm.pause(2)
+        """
+        TODO: get the starting location for pyramid
+        """
+        start_x = 
+        start_y = 
+        """
+        for pyramid coordinates, current solution: hard coding in calculated results for pyramid
+        pos should be a list of list of x, y, and z coordinates in forms of [[x, y, z], [x, y, z], ...]
+        """
+        pos = []
+        # click on the build Pyramid button twice to stop building pyramid
+        """
+        depthMin and depthMax are two constants
+        """
+        count = 0 # counts which position in pos list to use 
+        while (self.next_state != "buildPyramid"):
+            time.sleep(0.03)
+            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+            if (positions.size()!=0):
+                for i in range(len(positions)):
+                    x = positions[i][0]
+                    y = positions[i][1]
+                    world_coord = self.kinect.world_coord(x,y)
+                    joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])
+                    input_positions.append(joints[:])
+
+                    # place location
+                    phi = next_phi(joints)
+                    joints_p = IK([pos[count][0], pos[count][1], pos[count][2], phi])
+                    input_positions.append(joints_p[:])
+                    count += 1
+                self.tp.lineUp(input_positions)
+
 
     # helper function to find a empty place
     def next_loc(self, x, y):
