@@ -80,14 +80,15 @@ class Rexarm():
         self.set_positions(pos)
         self.pause(0.5)
 
-    def armth5(self,pose):
+
+    def toggle_gripper(self, pose):
         d1 = 118
         a2 = 99
         a3 = 99
         a4 = 143.6
         Xw,pose=np.split(pose,[1])
         Yw,pose=np.split(pose,[1])
-        Ze,phi=np.split(pose,[1])
+        # Ze,phi=np.split(pose,[1])
             # if phi>0:
         #     print 'error: phi must be negative according to convention'
         #     return 0
@@ -119,16 +120,6 @@ class Rexarm():
             th5 = 0.0
         pos = self.get_positions()[:]
         pos[4] = th5
-        # print pos
-        self.set_positions(pos)
-        self.pause(0.5)
-
-
-
-    def toggle_gripper(self, joint):
-        self.t_gripper = joint
-        pos = self.get_positions()[:]
-        pos[4] = joint
         self.set_positions(pos)
         self.pause(0.5)
 
