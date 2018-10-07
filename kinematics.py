@@ -233,9 +233,9 @@ def IK(pose):
     #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
     Ys = [0,a2*sin(th2),a2*sin(th2)+a3*sin(th2+th3),a2*sin(th2)+a3*sin(th2+th3)+a4*sin(phi)]
-    plt.plot(Xs,Ys,'-o')
-    plt.title('plot for X Y Z phi:' )
-    plt.show()
+    # plt.plot(Xs,Ys,'-o')
+    # plt.title('plot for X Y Z phi:' )
+    # plt.show()
     th2r = pi/2 - th2
     th3r = -th3
     th4r = -th4

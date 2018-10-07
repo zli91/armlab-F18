@@ -67,7 +67,7 @@ class Rexarm():
     def open_gripper(self):
         self.gripper_open = True
         pos = self.get_positions()[:]
-        pos[5] = 1.4 # how wide the gripper opens
+        pos[5] = 1.3 # how wide the gripper opens
         # print pos
         self.set_positions(pos)
         self.pause(0.5)

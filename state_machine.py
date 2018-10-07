@@ -458,8 +458,7 @@ class StateMachine():
         # wait for mouse click
         while (set_up==False):
             while (self.kinect.new_click==False): 
-                self.status_message = "State: Line 'em Up - waiting for mouse click for starting location"
-            phi = -np.pi/2
+                continue;
             [start_x, des_pos_y, des_pos_z] = self.kinect.world_coord(self.kinect.last_click[0], self.kinect.last_click[1])
             self.kinect.new_click = False;
             destination_x.clear()
@@ -472,46 +471,70 @@ class StateMachine():
             set_up = True
         print "x coord: "
         print destination_x
-        self.status_message = "set up complete "
-        self.rexarm.pause(1)
-        des_pos_x = 0
-        phi = -np.pi/2
-        des_pos_z = 25
-        # depth ranges for layer 3, 2, 1
-        depthRange = [[160,169],[170,173],[174,177]]
-        # depthRange = [[174,177]] 
-        # positions input into tp
-        input_positions = []
+        self.rexarm.pause(0.5)
+
+        self.tp.lineUpMain(self.kinect, destination_x, des_pos_y)
+        # self.kinect.new_click = False;
+        # all_colors = ["black", "red", "orange", "yellow", "green", "blue", "purple", "pink"]
+        # destination_x = {}
+        # set_up = False
+        # # wait for mouse click
+        # while (set_up==False):
+        #     while (self.kinect.new_click==False): 
+        #         self.status_message = "State: Line 'em Up - waiting for mouse click for starting location"
+        #     phi = -np.pi/2
+        #     [start_x, des_pos_y, des_pos_z] = self.kinect.world_coord(self.kinect.last_click[0], self.kinect.last_click[1])
+        #     self.kinect.new_click = False;
+        #     destination_x.clear()
+        #     # Black Red Orange Yellow Green Blue Violet Pink
+        #     for i in range(8):
+        #         if (start_x > 550):
+        #             print "ERROR: start location invalid for line up"
+        #         destination_x[all_colors[i]]=start_x
+        #         start_x = start_x+50
+        #     set_up = True
+        # print "x coord: "
+        # print destination_x
+        # self.status_message = "set up complete "
+        # self.rexarm.pause(1)
+        # des_pos_x = 0
+        # phi = -np.pi/2
+        # des_pos_z = 25
+        # # depth ranges for layer 3, 2, 1
+        # depthRange = [[160,169],[170,173],[174,177]]
+        # # depthRange = [[174,177]] 
+        # # positions input into tp
+        # input_positions = []
         
-        for j in range(len(depthRange)):
-            depthMin = depthRange[j][0]
-            depthMax = depthRange[j][1]
-            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
-            print "positions:"
-            print positions
-            print self.kinect.detectedCubeColor
-            for i in range(len(positions)):
-                # print "camera position detected"
-                # print positions[i]
-                # grab the block
+        # for j in range(len(depthRange)):
+        #     depthMin = depthRange[j][0]
+        #     depthMax = depthRange[j][1]
+        #     positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+        #     # print "positions:"
+        #     # print positions
+        #     # print self.kinect.detectedCubeColor
+        #     for i in range(len(positions)):
+        #         # print "camera position detected"
+        #         # print positions[i]
+        #         # grab the block
 
-                # block location
-                x = positions[i][0]
-                y = positions[i][1]
-                world_coord = self.kinect.world_coord(x,y)
-                joints = IK([world_coord[0], world_coord[1], world_coord[2]-13, phi])
-                input_positions.append(joints[:])
+        #         # block location
+        #         x = positions[i][0]
+        #         y = positions[i][1]
+        #         world_coord = self.kinect.world_coord(x,y)
+        #         joints = IK([world_coord[0], world_coord[1], 40*j-13, phi])
+        #         input_positions.append(joints[:])
 
-                # x coordinate to place the block
-                des_pos_x = destination_x[self.kinect.detectedCubeColor[i]]
-                # place location
-                phi = next_phi(joints)
-                # world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-                joints_p = IK([des_pos_x, des_pos_y, des_pos_z, phi])
-                input_positions.append(joints_p[:])
+        #         # x coordinate to place the block
+        #         des_pos_x = destination_x[self.kinect.detectedCubeColor[i]]
+        #         # place location
+        #         phi = next_phi(joints)
+        #         # world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+        #         joints_p = IK([des_pos_x, des_pos_y, 27, phi])
+        #         input_positions.append(joints_p[:])
 
-        print input_positions
-        self.tp.lineUp(input_positions)
+        # print input_positions
+        # self.tp.lineUp(input_positions)
 
     def stackHigh(self):
         self.current_state = "stackHigh"

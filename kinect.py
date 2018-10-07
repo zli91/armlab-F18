@@ -268,14 +268,14 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([0, 0, 70], [255, 255, 100]), # black
-            ([160, 165, 140], [180, 255, 200]), # red
-            ([0, 30, 101], [15, 255, 255]), # orange
-            ([20, 30, 101], [40, 255, 255]), # yellow
-            ([45, 50, 120],[80, 120, 170]), # green
-            ([100, 100, 160], [130, 190, 200]), # blue
-            ([120, 20, 130], [155, 130, 220]), # purple
-            ([160, 90, 230], [180, 170, 255]), # pink
+            ([0, 0, 40], [255, 255, 90]), # black
+            ([160, 120, 130], [190, 180, 180]), # red
+            ([0, 140, 200], [15, 240, 255]), # orange
+            ([20, 100, 200], [40, 220, 255]), # yellow
+            ([50, 80, 90],[80, 150, 170]), # green
+            ([90, 120, 130], [130, 200, 190]), # blue
+            ([131, 60, 90], [160, 140, 160]), # purple
+            ([150, 130, 210], [180, 190, 255]), # pink
             ]
 
         ### color detection in rgb image
@@ -387,11 +387,12 @@ class Kinect():
 
     def detectBlocksInDepthImage(self,boundMin, boundMax):
         """
-        TODO:
         Implement a blob detector to find blocks
         in the depth image
         """
-        self.contoursByDepth = np.array([])
+        self.captureDepthFrame()
+        print "bound: ", boundMin, boundMax
+        contoursDepth = np.array([])
         # convert depthImage into 8 bits
         depthImage = self.currentDepthFrame[:]
         np.clip(depthImage,0,2**10 - 1,depthImage)
@@ -419,10 +420,11 @@ class Kinect():
             kernel = np.ones((5,5),np.uint8)
             grayDilation = cv2.dilate(grayThreshold,kernel,iterations = 1)
             # find countors
-            _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-            self.contoursByDepth = np.append(self.contoursByDepth,self.contours)
+            _, contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            contoursDepth = np.append(contoursDepth, contours)
 
-        return self.contoursByDepth
+        print "in detectBlocksInDepthImage, contour depth has length", len(contoursDepth)
+        return contoursDepth
 
     # takes in world coordinates and returns depth of that point
     def depthOf(self,x,y):
