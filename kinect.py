@@ -329,7 +329,7 @@ class Kinect():
                 hAve = 0
                 sAve = 0
                 vAve = 0
-                lenAve = 0
+                len1 = 0
 
                 for k in range(len(colorDetectionPoints)):
                     # find hsv
@@ -357,8 +357,9 @@ class Kinect():
                     box = np.int0(box)
 
                     # judge if contour is cube # cube length in mouse coord: at least 19
-                    lenAve = (((box[0][0]-box[1][0])**2+(box[0][1]-box[1][1])**2)**0.5+((box[0][0]-box[3][0])**2+(box[0][1]-box[3][1])**2)**0.5)
-                    if int(lenAve) < 42:
+                    len1 = ((box[0][0]-box[1][0])**2+(box[0][1]-box[1][1])**2)**0.5
+                    len2 = ((box[0][0]-box[3][0])**2+(box[0][1]-box[3][1])**2)**0.5
+                    if (int(len1) < 21) or (int(len2) < 21):
                         continue
 
                     # record vertexs
