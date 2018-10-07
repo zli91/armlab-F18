@@ -144,9 +144,7 @@ def IK(pose):
     a4 = 143.6
     Xw,pose=np.split(pose,[1])
     Yw,pose=np.split(pose,[1])
-    Ze,pose=np.split(pose,[1])
-    phi,cubeOrient==np.split(pose,[1])
-    # if phi>0:
+    Ze,phi=np.split(pose,[1])    # if phi>0:
     #     print 'error: phi must be negative according to convention'
     #     return 0
 
@@ -161,21 +159,21 @@ def IK(pose):
     if ((Re**2+Ze**2)**0.5)>341.6:
         print 'Position too far'
         return [0,0,0,0]
-    if (Re <= 220):
-        if th1 <=pi/2:
-            th1a = (pi/2)-th1
-            th5 = cubeOrient - th1a 
-        elif th1 <= pi:
-            th1a = th1 - pi/2
-            th5 = th1a - cubeOrient
-        elif th1 <= 3*pi/2:
-            th1a = (3*pi/2)-th1
-            th5 = cubeOrient - th1a    
-        elif th1 <= 2*pi:
-            th1a = th1 - 3*pi/2
-            th5 = th1a - cubeOrient
-    else:
-        th5 = 0
+    # if (Re <= 220):
+    #     if th1 <=pi/2:
+    #         th1a = (pi/2)-th1
+    #         th5 = cubeOrient - th1a 
+    #     elif th1 <= pi:
+    #         th1a = th1 - pi/2
+    #         th5 = th1a - cubeOrient
+    #     elif th1 <= 3*pi/2:
+    #         th1a = (3*pi/2)-th1
+    #         th5 = cubeOrient - th1a    
+    #     elif th1 <= 2*pi:
+    #         th1a = th1 - 3*pi/2
+    #         th5 = th1a - cubeOrient
+    # else:
+    #     th5 = 0
 
 
 
@@ -241,7 +239,7 @@ def IK(pose):
     th2r = pi/2 - th2
     th3r = -th3
     th4r = -th4
-    return[th1,th2r,th3r,th4r,th5]
+    return[th1,th2r,th3r,th4r]
     # phi = -th4r + (pi/2 - th2r) - th3r
     
     """
@@ -307,3 +305,4 @@ def to_s_matrix(w,v):
 # get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
 # get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
 # print IK([x_off+200,y_off-200,118,-pi/4]);
+

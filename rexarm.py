@@ -2,6 +2,8 @@
 import numpy as np
 from kinematics import *
 import time
+from kinect import Kinect as kinect
+
 
 """ 
 TODO:
@@ -77,6 +79,51 @@ class Rexarm():
         # print pos
         self.set_positions(pos)
         self.pause(0.5)
+
+    def armth5(self,pose):
+        d1 = 118
+        a2 = 99
+        a3 = 99
+        a4 = 143.6
+        Xw,pose=np.split(pose,[1])
+        Yw,pose=np.split(pose,[1])
+        Ze,phi=np.split(pose,[1])
+            # if phi>0:
+        #     print 'error: phi must be negative according to convention'
+        #     return 0
+
+        Ye = -(float(Xw)-x_off)
+        Xe = float(Yw)-y_off
+        Re = (Xe**2 + Ye**2)**0.5
+        #phi = float(phi)
+
+        th1 = atan2(Ye,Xe)                                                      #theta 1 
+        cubeOrient = self.kinect.cubeOrient
+        # if ((Re**2+Ze**2)**0.5)>341.6:
+        #     print 'Position too far'
+        #     return [0,0,0,0]
+        if (Re <= 220):
+            if th1 <=pi/2:
+                th1a = (pi/2)-th1
+                th5 = cubeOrient - th1a 
+            elif th1 <= pi:
+                th1a = th1 - pi/2
+                th5 = th1a - cubeOrient
+            elif th1 <= 3*pi/2:
+                th1a = (3*pi/2)-th1
+                th5 = cubeOrient - th1a    
+            elif th1 <= 2*pi:
+                th1a = th1 - 3*pi/2
+                th5 = th1a - cubeOrient
+        else:
+            th5 = 0.0
+        pos = self.get_positions()[:]
+        pos[4] = th5
+        # print pos
+        self.set_positions(pos)
+        self.pause(0.5)
+
+
 
     def toggle_gripper(self, joint):
         self.toggle_gripper = joint
