@@ -372,7 +372,7 @@ class StateMachine():
         x_off = 304  # distances from center of the bottom of ReArm to world origin
         y_off = 301.5
         phi = -np.pi/2
-        positions = self.kinect.blockDetector()[:]
+        positions = self.kinect.blockDetector(174,177)[:]
         input_positions = []
         for i in range(len(positions)):
             print "camera position detected"
@@ -415,8 +415,8 @@ class StateMachine():
         phi = -np.pi/2
         des_pos_x = 150
         des_pos_y = 150
-        des_pos_z = 25
-        positions = self.kinect.blockDetector()[:]
+        des_pos_z = 23
+        positions = self.kinect.blockDetector(174,177)[:]
         input_positions = []
         for i in range(len(positions)):
             print "camera position detected"
@@ -471,15 +471,13 @@ class StateMachine():
                 destination_x[all_colors[i]]=start_x
                 start_x = start_x+50
             set_up = True
-
+        self.status_message = "set up complete "
+        self.rexarm.pause(1)
         des_pos_x = 0
         phi = -np.pi/2
         des_pos_z = 25
-        positions = []
-        """
-        TODO: ask for the ranges
-        """
-        depthRange = [[],[],[]] # TODO: ask for the ranges
+        # depth ranges for layer 3, 2, 1
+        depthRange = [[160,169],[170,173],[174,177]]
         # positions input into tp
         input_positions = []
         
@@ -487,6 +485,8 @@ class StateMachine():
             depthMin = depthRange[j][0]
             depthMax = depthRange[j][1]
             positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+            print "positions:"
+            print positions
             for i in range(len(positions)):
                 # print "camera position detected"
                 # print positions[i]
@@ -529,10 +529,9 @@ class StateMachine():
         phi = -np.pi/2
         des_pos_z = 25
         positions = []
-        """
-        TODO: ask for the ranges
-        """
-        depthRange = [[],[],[]] 
+        # depth ranges for layer 3, 2, 1
+        # depthRange = [[160,169],[170,173],[174,177]] 
+        depthRange = [[174,177]] 
         # positions input into tp
         input_positions = []
         
@@ -557,6 +556,7 @@ class StateMachine():
                 joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
                 input_positions.append(joints_p[:])
 
+            print "stack high input:"
             print input_positions
             self.tp.lineUp(input_positions)
 
@@ -585,8 +585,8 @@ class StateMachine():
         """
         TODO: get the starting location for pyramid
         """
-        start_x = 
-        start_y = 
+        start_x = 0
+        start_y = 0
         """
         for pyramid coordinates, current solution: hard coding in calculated results for pyramid
         pos should be a list of list of x, y, and z coordinates in forms of [[x, y, z], [x, y, z], ...]

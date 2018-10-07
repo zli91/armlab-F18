@@ -128,7 +128,7 @@ class Kinect():
 
 
     def processVideoFrame(self):
-        self.blockDetector()
+        self.blockDetector(174,177)
         # draw contours
         cv2.drawContours(self.currentVideoFrame,self.rectVertex,-1,(0,255,0),3)
 
@@ -247,14 +247,14 @@ class Kinect():
         matrix_in = np.genfromtxt(os.path.join(os.path.dirname(__file__), "util/intrinsic_matrix.csv"), delimiter=",")
         return matrix_in
     
-    def blockDetector(self):
+    def blockDetector(self, boundMin, boundMax):
         """
         TODO:
         Implement your block detector here.  
         You will need to locate
         blocks in 3D space
         """
-        self.detectBlocksInDepthImage()
+        self.detectBlocksInDepthImage(boundMin, boundMax)
         cubeColor = ['black','red','orange','yellow','green','blue','purple','pink']
         # rgbBoundaries = [ # b,g,r
         #     ([4, 160, 240], [50, 210, 253]), # yellow
@@ -378,7 +378,7 @@ class Kinect():
         return camera_coord
 
 
-    def detectBlocksInDepthImage(self):
+    def detectBlocksInDepthImage(self,boundMin, boundMax):
         """
         TODO:
         Implement a blob detector to find blocks
@@ -397,10 +397,10 @@ class Kinect():
         # use grayscale in depth to measure the depth of object
 
         # detect object
-        grayBoundaries = [
-            # (160,169), # 3st layer
+        grayBoundaries = [(boundMin, boundMax)]
+            # (160,169)] # 3st layer
             # (170,173), # 2st layer
-            (174,177)] # 1st layer
+            # (174,177)] # 1st layer
         self.contoursByDepth = np.array([])
 
         for i in range(len(grayBoundaries)):
