@@ -106,7 +106,7 @@ class Rexarm():
             if th1 <=pi/2:
                 th1a = (pi/2)-th1
                 th5 = cubeOrient - th1a 
-            elif th1 <= pi:
+            elif th1 <= pi
                 th1a = th1 - pi/2
                 th5 = th1a - cubeOrient
             elif th1 <= 3*pi/2:
