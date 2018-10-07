@@ -289,24 +289,32 @@ class TrajectoryPlanner():
         cur_pos_rot = []
         while(len(positions)>0):
             if (pick==True):
-                self.rexarm.toggle_gripper(0.0)
+                # self.rexarm.toggle_gripper(0.0)
                 cur_pos = positions.pop(0)[:]
                 self.add_wp(pre_pos)
+                self.execute_plan()
+                self.rexarm.toggle_gripper(0.0)
+
                 cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
                 self.add_wp(cur_pos_rot)
                 pre_pos = cur_pos_rot[:]
                 self.add_wp(cur_pos)
                 self.execute_plan_and_grab()
+                
                 pick = False;
             else:
-                self.rexarm.toggle_gripper(np.pi/2)
+                # self.rexarm.toggle_gripper(np.pi/2)
                 cur_pos = positions.pop(0)[:]
                 cur_pos_rot = [cur_pos[0], pre_pos[1], pre_pos[2], pre_pos[3]]
-                self.add_wp(cur_pos_rot)
+                self.add_wp(pre_pos)
+                self.execute_plan()
+                
+                self.rexarm.toggle_gripper(np.pi/2)
                 pre_pos = cur_pos_rot[:]
                 self.add_wp(cur_pos_rot)
                 self.add_wp(cur_pos)
                 self.execute_plan_and_place()
+                
                 pick = True
         self.add_wp(pre_pos)
         self.add_wp([0,0,0,0])

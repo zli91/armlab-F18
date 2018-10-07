@@ -13,6 +13,7 @@ class Kinect():
         self.convert_to_world = np.array([])
         self.convert_to_cam = np.array([])
         self.cubeContours = np.array([])
+        self.contoursByDepth = np.array([])
         if(freenect.sync_get_depth() == None):
             self.kinectConnected = False
         else:
@@ -254,7 +255,7 @@ class Kinect():
         You will need to locate
         blocks in 3D space
         """
-        self.detectBlocksInDepthImage(boundMin, boundMax)
+        self.contoursByDepth = self.detectBlocksInDepthImage(boundMin, boundMax)[:]
         cubeColor = ['black','red','orange','yellow','green','blue','purple','pink']
         # rgbBoundaries = [ # b,g,r
         #     ([4, 160, 240], [50, 210, 253]), # yellow
@@ -284,19 +285,24 @@ class Kinect():
 
         self.cubeCenter = []
         del self.detectedCubeColor[:]
-        colorDetectionPoints = []
         self.cubeContours = []
         self.rectVertex = []
         del self.cubeOrient[:]
-        self.vertexCoordInWorld = []
+        # vertexCoordInWorld = []
+        
         camera_coord = []
+        colorDetectionPoints = []
 
+        print "debug: hsv"
+        print len(hsvBoundaries)
         for j in range(len(hsvBoundaries)):
             (lower,upper) = hsvBoundaries[j]
             lower = np.array(lower, dtype="uint8")
             upper = np.array(upper, dtype="uint8")        
-        
-            for i in range(len(self.contoursByDepth)):        
+            
+            print "debug: contourDepth"
+            print len(self.contoursByDepth)  
+            for i in range(len(self.contoursByDepth)):      
                 # find center of mass
                 cubeMoment = cv2.moments(self.contoursByDepth[i])
                 centerX = int(cubeMoment["m10"] / cubeMoment["m00"])
@@ -368,12 +374,12 @@ class Kinect():
                 else:
                     continue
 
-            if(self.blockMessage):
-                print self.cubeCenter
-                print self.cubeOrient
-                print self.detectedCubeColor
-                print camera_coord
-            
+        if(self.blockMessage or True):
+            print "kinect msg"
+            print self.cubeCenter
+            print self.cubeOrient
+            print self.detectedCubeColor
+            print camera_coord
 
         return camera_coord
 
@@ -384,6 +390,7 @@ class Kinect():
         Implement a blob detector to find blocks
         in the depth image
         """
+        self.contoursByDepth = np.array([])
         # convert depthImage into 8 bits
         depthImage = self.currentDepthFrame[:]
         np.clip(depthImage,0,2**10 - 1,depthImage)
@@ -401,7 +408,6 @@ class Kinect():
             # (160,169)] # 3st layer
             # (170,173), # 2st layer
             # (174,177)] # 1st layer
-        self.contoursByDepth = np.array([])
 
         for i in range(len(grayBoundaries)):
             (grayLower,grayUpper) = grayBoundaries[i]
@@ -415,7 +421,7 @@ class Kinect():
             _, self.contours, _ = cv2.findContours(grayDilation,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
             self.contoursByDepth = np.append(self.contoursByDepth,self.contours)
 
-        return None
+        return self.contoursByDepth
 
     # takes in world coordinates and returns depth of that point
     def depthOf(self,x,y):
