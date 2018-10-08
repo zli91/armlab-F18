@@ -67,7 +67,7 @@ class Rexarm():
     def open_gripper(self):
         self.gripper_open = True
         pos = self.get_positions()[:]
-        pos[5] = 1.3 # how wide the gripper opens
+        pos[5] = 1.45 # how wide the gripper opens
         # print pos
         self.set_positions(pos)
         self.pause(0.5)
@@ -108,6 +108,7 @@ class Rexarm():
         # if ((Re**2+Ze**2)**0.5)>341.6:
         #     print 'Position too far'
         #     return [0,0,0,0]
+        cubeOrient = pi/2 - cubeOrient
         if ~grabOrplace:
             if (Re <= 220):
                 if th1 <=pi/2:
@@ -138,7 +139,8 @@ class Rexarm():
                 elif th1 <= 2*pi:
                     th1a = th1 - 3*pi/2
                     th5 = th1a - pi/2
-        th5 += np.pi/4             
+
+        # th5 += np.pi/4             
         pos = self.get_positions()[:]
         self.t_gripper = th5;
         pos[4] = th5

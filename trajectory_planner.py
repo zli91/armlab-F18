@@ -62,7 +62,7 @@ class TrajectoryPlanner():
 
         # if the gripper is open
         if (self.rexarm.gripper_open == True): # gripper open
-            pos.append(1.4)
+            pos.append(1.45)
         else:
             pos.append(0)
 
@@ -207,7 +207,7 @@ class TrajectoryPlanner():
                 self.go();
                 self.initial_wp = self.rexarm.get_positions()[0:4];
             self.close_gripper()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def execute_plan_and_place(self, look_ahead=8):
         # print([max_speed]*len(self.rexarm.joints))
@@ -220,7 +220,7 @@ class TrajectoryPlanner():
                 self.go();
                 self.initial_wp = self.rexarm.get_positions()[0:4];
             self.open_gripper()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def pickNPlace(self, positions):
         y_off = 301.5
