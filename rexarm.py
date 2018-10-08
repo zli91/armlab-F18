@@ -81,7 +81,7 @@ class Rexarm():
         self.pause(0.5)
 
 
-    def toggle_gripper(self, cubeOrient, pose):
+    def toggle_gripper(self, cubeOrient, pose,grabOrplace):
         d1 = 118
         a2 = 99
         a3 = 99
@@ -97,27 +97,41 @@ class Rexarm():
         Xe = float(Yw)-y_off
         Re = (Xe**2 + Ye**2)**0.5
         #phi = float(phi)
-
         th1 = atan2(Ye,Xe)                                                      #theta 1 
         # cubeOrient = kinect_ins.cubeOrient
         # if ((Re**2+Ze**2)**0.5)>341.6:
         #     print 'Position too far'
         #     return [0,0,0,0]
-        if (Re <= 220):
-            if th1 <=pi/2:
-                th1a = (pi/2)-th1
-                th5 = cubeOrient - th1a 
-            elif th1 <= pi:
-                th1a = th1 - pi/2
-                th5 = th1a - cubeOrient
-            elif th1 <= 3*pi/2:
-                th1a = (3*pi/2)-th1
-                th5 = cubeOrient - th1a    
-            elif th1 <= 2*pi:
-                th1a = th1 - 3*pi/2
-                th5 = th1a - cubeOrient
+        if ~grabOrplace:
+            if (Re <= 220):
+                if th1 <=pi/2:
+                    th1a = (pi/2)-th1
+                    th5 = cubeOrient - th1a 
+                elif th1 <= pi:
+                    th1a = th1 - pi/2
+                    th5 = th1a - cubeOrient
+                elif th1 <= 3*pi/2:
+                    th1a = (3*pi/2)-th1
+                    th5 = cubeOrient - th1a    
+                elif th1 <= 2*pi:
+                    th1a = th1 - 3*pi/2
+                    th5 = th1a - cubeOrient
+            else:
+                th5 = 0.0
         else:
-            th5 = 0.0
+                if th1 <=pi/2:
+                    th1a = (pi/2)-th1
+                    th5 = pi/2 - th1a 
+                elif th1 <= pi:
+                    th1a = th1 - pi/2
+                    th5 = th1a - pi/2
+                elif th1 <= 3*pi/2:
+                    th1a = (3*pi/2)-th1
+                    th5 = pi/2 - th1a    
+                elif th1 <= 2*pi:
+                    th1a = th1 - 3*pi/2
+                    th5 = th1a - pi/2
+
         pos = self.get_positions()[:]
         pos[4] = th5
         self.set_positions(pos)
