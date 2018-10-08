@@ -318,14 +318,14 @@ class TrajectoryPlanner():
                 y = positions[i][1]
                 world_coord = kinect_ins.world_coord(x,y)
                 joints = IK([world_coord[0], world_coord[1], world_coord[2]-13, phi])
-                self.rexarm.armth5([world_coord[0], world_coord[1], world_coord[2]-13, phi])
+                # self.rexarm.armth5([world_coord[0], world_coord[1], world_coord[2]-13, phi])
                 joints_up = IK([world_coord[0], world_coord[1], world_coord[2]+40, phi])
                 joints_top = [joints_up[0], 0, 0, 0]
 
                 self.add_wp(pre_up)
                 self.add_wp(pre_top)
                 self.execute_plan()
-                self.rexarm.toggle_gripper([world_coord[0], world_coord[1], world_coord[2]+40, phi])
+                self.rexarm.toggle_gripper(kinect_ins.cubeOrient[i], [world_coord[0], world_coord[1], world_coord[2]+40, phi])
 
                 self.add_wp(joints_top)
                 self.add_wp(joints_up[:])
@@ -356,7 +356,7 @@ class TrajectoryPlanner():
                 self.add_wp(joints_p_up[:])
                 # self.execute_plan()
                 self.execute_plan()
-                self.rexarm.toggle_gripper(np.pi/2)
+                # self.rexarm.toggle_gripper(np.pi/2)
 
 
                 pre_up = joints_p_up;

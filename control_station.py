@@ -33,6 +33,7 @@ MAX_Y = 520
 
 """ Serial Port Parameters"""
 BAUDRATE   = 1000000
+# BAUDRATE   = 57000 
 DEVICENAME = "/dev/ttyACM0".encode('utf-8')
 
 """Threads"""

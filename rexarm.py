@@ -81,7 +81,7 @@ class Rexarm():
         self.pause(0.5)
 
 
-    def toggle_gripper(self, pose):
+    def toggle_gripper(self, cubeOrient, pose):
         d1 = 118
         a2 = 99
         a3 = 99
@@ -99,7 +99,7 @@ class Rexarm():
         #phi = float(phi)
 
         th1 = atan2(Ye,Xe)                                                      #theta 1 
-        cubeOrient = self.kinect.cubeOrient
+        # cubeOrient = kinect_ins.cubeOrient
         # if ((Re**2+Ze**2)**0.5)>341.6:
         #     print 'Position too far'
         #     return [0,0,0,0]
