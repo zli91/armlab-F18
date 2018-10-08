@@ -80,6 +80,12 @@ class Rexarm():
         self.set_positions(pos)
         self.pause(0.5)
 
+    def set_gripper_angle(self, joint):            
+        pos = self.get_positions()[:]
+        self.t_gripper = joint;
+        pos[4] = joint
+        self.set_positions(pos)
+        self.pause(0.5)
 
     def toggle_gripper(self, cubeOrient, pose,grabOrplace):
         d1 = 118

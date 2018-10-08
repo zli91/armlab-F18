@@ -552,7 +552,7 @@ class StateMachine():
         des_pos_y = self.kinect.last_click[1]
         self.kinect.new_click = False;
 
-        self.tp.StackHighMain()
+        self.tp.StackHighMain(self.kinect, des_pos_x, des_pos_y)
         # phi = -np.pi/2
         # des_pos_z = 20
         # positions = []
