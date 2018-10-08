@@ -388,7 +388,7 @@ class StateMachine():
             print "world coord converted"
             print world_coord
 
-            joints = IK([world_coord[0], world_coord[1], world_coord[2]-20, phi])[:]
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-13, phi])[:]
             
             joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
@@ -402,7 +402,7 @@ class StateMachine():
             input_positions.append(joints_p[:])
         print "input:"
         print input_positions
-        self.rexarm.pause(3)
+        # self.rexarm.pause(3)
         self.tp.pickNPlace(input_positions)
         # self.tp.pickNPlace()
 
@@ -413,9 +413,9 @@ class StateMachine():
         x_off = 304  # distances from center of the bottom of ReArm to world origin
         y_off = 301.5
         phi = -np.pi/2
-        des_pos_x = 150
-        des_pos_y = 150
-        des_pos_z = 23
+        des_pos_x = 200
+        des_pos_y = 200
+        des_pos_z = 25
         positions = self.kinect.blockDetector(174,177)[:]
         input_positions = []
         for i in range(len(positions)):

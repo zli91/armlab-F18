@@ -64,10 +64,17 @@ class Rexarm():
             self.gripper.set_speed(0.8)
             self.close_gripper()
 
+    # def reset_t_gripper(self):
+    #     pos = self.get_positions()[:]
+    #     # self.t_gripper = th5;
+    #     pos[4] = 0
+    #     self.set_positions(pos)
+    #     self.pause(0.5)
+
     def open_gripper(self):
         self.gripper_open = True
         pos = self.get_positions()[:]
-        pos[5] = 1.3 # how wide the gripper opens
+        pos[5] = 1.45 # how wide the gripper opens
         # print pos
         self.set_positions(pos)
         self.pause(0.5)
@@ -103,13 +110,17 @@ class Rexarm():
         Xe = float(Yw)-y_off
         Re = (Xe**2 + Ye**2)**0.5
         #phi = float(phi)
-        th1 = atan2(Ye,Xe)                                                      #theta 1 
+        th1 = atan2(Ye,Xe) 
+        if th1<0:
+            th1+=2*pi
+                                                             #theta 1 
         # cubeOrient = kinect_ins.cubeOrient
         # if ((Re**2+Ze**2)**0.5)>341.6:
         #     print 'Position too far'
         #     return [0,0,0,0]
-        if ~grabOrplace:
-            if (Re <= 220):
+        cubeOrient = -cubeOrient
+        if not grabOrplace:
+            if (Re <= 300):
                 if th1 <=pi/2:
                     th1a = (pi/2)-th1
                     th5 = cubeOrient - th1a 
@@ -124,23 +135,31 @@ class Rexarm():
                     th5 = th1a - cubeOrient
             else:
                 th5 = 0.0
-
+            if abs(th5)>0.7:
+                th5 = -1*np.sign(th5)*(abs(th5) - pi/2)
         else:
-                if th1 <=pi/2:
-                    th1a = (pi/2)-th1
-                    th5 = pi/2 - th1a 
-                elif th1 <= pi:
-                    th1a = th1 - pi/2
-                    th5 = th1a - pi/2
-                elif th1 <= 3*pi/2:
-                    th1a = (3*pi/2)-th1
-                    th5 = pi/2 - th1a    
-                elif th1 <= 2*pi:
-                    th1a = th1 - 3*pi/2
-                    th5 = th1a - pi/2
-        th5 += np.pi/4             
-        pos = self.get_positions()[:]
+            print 'even entered here???'
+            if th1 <=pi/2:
+                th1a = (pi/2)-th1
+                th5 = pi/2 - th1a 
+            elif th1 <= pi:
+                th1a = th1 - pi/2
+                th5 = pi/2 - th1a  
+                print 'th5 should be positive'    
+            elif th1 <= 3*pi/2:
+                th1a = (3*pi/2)-th1
+                th5 = th1a - pi/2  
+                # th5 = -th5
+                print 'th5 should be negative'    
+            elif th1 <= 2*pi:
+                th1a = th1 - 3*pi/2
+                th5 = th1a - pi/2
+
+        # th5 += np.pi/4 
+        print 'entered toggle,th1=',th1,'th1a=',th1a,'th5=',th5,'cubeOrient=',cubeOrient            
+        
         self.t_gripper = th5;
+        pos = self.get_positions()[:]
         pos[4] = th5
         self.set_positions(pos)
         self.pause(0.5)
