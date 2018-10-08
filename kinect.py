@@ -64,6 +64,9 @@ class Kinect():
         # check if cv is calibrated
         if (self.kinectCalibrated == True):
             z = self.currentDepthFrame[y][x]
+            # while (z>722):
+            #     self.captureDepthFrame()
+            #     z = self.currentDepthFrame[y][x]
         else:
             print("ERROR: Camera Calibrate should be completed prior to Click and Grab")
             return
@@ -92,6 +95,8 @@ class Kinect():
         # return [cam_X,cam_Y,world_Z]
 
     def world_coord_tp(self, x, y):
+        x = int(x)
+        y = int(y)
         self.captureDepthFrame()
         height_y = 920.5
         height_x = 918.5
@@ -430,6 +435,8 @@ class Kinect():
     def depthOf(self,x,y):
         world_coord = [x,y,1]
         camera_coord = np.matmul(self.convert_to_cam, world_coord)
-        cam_Z = self.currentDepthFrame[camera_coord[1]][camera_coord[0]]
+        print "depthOf"
+        print camera_coord
+        cam_Z = self.currentDepthFrame[int(camera_coord[1])][int(camera_coord[0])]
         return self.worldHeight - 0.1236 * 1000 * np.tan(cam_Z/2842.5 + 1.1863)
 

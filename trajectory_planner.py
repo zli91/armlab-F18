@@ -321,6 +321,8 @@ class TrajectoryPlanner():
                 x = positions[i][0]
                 y = positions[i][1]
                 world_coord = kinect_ins.world_coord(x,y)
+                while (world_coord[2] > 400):
+                    world_coord = kinect_ins.world_coord(x,y)
                 joints = IK([world_coord[0], world_coord[1], world_coord[2]-13, phi])
                 # self.rexarm.armth5([world_coord[0], world_coord[1], world_coord[2]-13, phi])
                 joints_up = IK([world_coord[0], world_coord[1], world_coord[2]+40, phi])
@@ -369,7 +371,7 @@ class TrajectoryPlanner():
                 self.add_wp(joints_p[:])
                 self.execute_plan_and_place()
                 # self.rexarm.open_gripper()
-                # self.rexarm.pause(0.5)
+                self.rexarm.pause(0.5)
 
         self.add_wp(pre_up)
         self.add_wp(pre_top)
@@ -385,35 +387,83 @@ class TrajectoryPlanner():
         depthRange = [[160,169],[170,173],[174,177]] 
         # depthRange = [[174,177]] 
         # positions input into tp
-        input_positions = []
-        
+        # input_positions = []
+        pre_up = [0,0,0,0]
+        pre_top = [0,0,0,0]
+        des_pos_z = 27
+
+        phi = -np.pi/2
         # step one: put all blocks on board
         for j in range(len(depthRange)-1):
             depthMin = depthRange[j][0]
             depthMax = depthRange[j][1]
             positions = kinect_ins.blockDetector(depthMin,depthMax)[:]
             for i in range(len(positions)):
+                # x coordinate to place the block
                 # block location
                 x = positions[i][0]
                 y = positions[i][1]
                 world_coord = kinect_ins.world_coord(x,y)
+                while (world_coord[2] > 400):
+                    world_coord = kinect_ins.world_coord(x,y)
                 joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
-                input_positions.append(joints[:])
+                # self.rexarm.armth5([world_coord[0], world_coord[1], world_coord[2]-13, phi])
+                joints_up = IK([world_coord[0], world_coord[1], world_coord[2]+50, phi])
+                joints_top = [joints_up[0], 0, 0, 0]
+
+                self.add_wp(pre_up)
+                self.add_wp(pre_top)
+                self.execute_plan()
+                self.tp_toggle_gripper(kinect_ins.cubeOrient[i], [world_coord[0], world_coord[1], world_coord[2], phi],0)
+                # print 'tp_world coord',world_coord
+                self.add_wp(joints_top)
+                self.add_wp(joints_up[:])
+                # self.execute_plan()
+
+                pre_top = joints_top
+                pre_up = joints_up
+
+                self.add_wp(joints[:])
+                self.execute_plan_and_grab()
+                # self.rexarm.close_gripper()
+                # self.rexarm.pause(0.5)
 
                 # x coordinate to place the block
                 des_pos = self.next_loc(kinect_ins, world_coord[0], world_coord[1])
                 # place location
                 phi = next_phi(joints)
-                world_coord_p = kinect_ins.world_coord(des_pos[0],des_pos[1])
-                joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
-                input_positions.append(joints_p[:])
+                # world_coord_p = kinect_ins.world_coord(int(des_pos[0]),int(des_pos[1]))
+                joints_p = IK([int(des_pos[0]), int(des_pos[1]), des_pos_z, phi])
+                joints_p = IK([des_pos_x, des_pos_y, des_pos_z, phi])
+                joints_p_up = IK([des_pos_x, des_pos_y, des_pos_z+50, phi])
+                joints_p_top = [joints_p_up[0], 0, 0, 0]
 
-            print "stack high input:"
-            print input_positions
-            self.lineUp(input_positions)
+                self.add_wp(pre_up)
+                self.add_wp(pre_top)
+                self.execute_plan()
+                self.tp_toggle_gripper(0,[des_pos_x, des_pos_y, des_pos_z, phi],0)
+
+                self.add_wp(joints_p_top[:])
+                self.add_wp(joints_p_up[:])
+                # self.execute_plan()
+                # self.execute_plan()
+                # self.rexarm.toggle_gripper(np.pi/2)
+
+                pre_up = joints_p_up;
+                pre_top = joints_p_top;
+
+                self.add_wp(joints_p[:])
+                self.execute_plan_and_place()
+                
+        self.add_wp(pre_up)
+        self.add_wp(pre_top)
+        self.add_wp([0,0,0,0])
+        self.execute_plan()
+        self.set_gripper_angle(0)
 
         pre_up = [0,0,0,0]
         pre_top = [0,0,0,0]
+        des_pos_z = 27
         # step two: stack
         world_coord_p = kinect_ins.world_coord(des_pos_x,des_pos_y)
         des_pos_x = world_coord_p[0]
@@ -428,13 +478,15 @@ class TrajectoryPlanner():
             joints = IK([world_coord[0], world_coord[1], world_coord[2]-13, phi])
             # self.rexarm.armth5([world_coord[0], world_coord[1], world_coord[2]-13, phi])
             joints_up = IK([world_coord[0], world_coord[1], world_coord[2]+40, phi])
-            joints_top = [joints_up[0], 0, 0, 0]
+            joints_top = [joints[0], 0, 0, 0]
+            if (joints_up == [0,0,0,0]):
+                joints_up = joints_top[:]
 
             self.add_wp(pre_up)
             self.add_wp(pre_top)
             self.execute_plan()
             self.tp_toggle_gripper(kinect_ins.cubeOrient[i], [world_coord[0], world_coord[1], world_coord[2]+40, phi],0)
-            print 'tp_world coord',world_coord
+            # print 'tp_world coord',world_coord
             self.add_wp(joints_top)
             self.add_wp(joints_up[:])
             # self.execute_plan()
@@ -447,18 +499,21 @@ class TrajectoryPlanner():
             # self.rexarm.close_gripper()
             # self.rexarm.pause(0.5)
 
-            
+            if (i <= 5):
+                phi = -np.pi/2
+            else:
             # place location
-            phi = 0
+                phi = 0
             # world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
             joints_p = IK([des_pos_x, des_pos_y, des_pos_z, phi])
             joints_p_up = IK([des_pos_x, des_pos_y, des_pos_z+50, phi])
-            joints_p_top = [joints_p_up[0], 0, 0, 0]
-
+            joints_p_top = [joints_p[0], 0, 0, 0]
+            if (joints_p_up == [0,0,0,0]):
+                joints_p_up = joints_p_top[:]
             self.add_wp(pre_up)
             self.add_wp(pre_top)
             self.execute_plan()
-            self.tp_toggle_gripper(0,[des_pos_x, des_pos_y, des_pos_z, phi],0)
+            self.set_gripper_angle(0)
 
             self.add_wp(joints_p_top[:])
             self.add_wp(joints_p_up[:])
@@ -498,7 +553,7 @@ class TrajectoryPlanner():
 
     # helper function to find a empty place
     def next_loc(self, kinect_ins, x, y):
-        diff = 55
+        diff = 30
         x_off = 304  # distances from center of the bottom of ReArm to world origin
         y_off = 301.5
         x_sign = 0
