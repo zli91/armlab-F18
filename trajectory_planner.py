@@ -15,6 +15,7 @@ TODO: build a trajectory generator and waypoint planner
 class TrajectoryPlanner():
     def __init__(self, rexarm):
         self.idle = True
+        self.count = 0
         self.rexarm = rexarm
         self.kinect = kinect
         self.num_joints = 4
@@ -125,8 +126,9 @@ class TrajectoryPlanner():
             # write_pos+=current_pos[:]
             write_pos.append(time.time()-time_begin)
             writeResult.writerow(write_pos)
-        self.rexarm.pause(time_interval)
-        # self.rexarm.set_positions(pos)
+        self.rexarm.set_positions(pos)
+        self.rexarm.pause(2*time_interval)
+        
         resultFile.close()
         print "complete moving"
         return True
@@ -248,6 +250,7 @@ class TrajectoryPlanner():
                 self.add_wp(cur_pos)
                 self.execute_plan_and_place()
                 pick = True
+
         self.add_wp(pre_pos)
         self.add_wp([0,0,0,0])
         self.execute_plan()
@@ -318,6 +321,7 @@ class TrajectoryPlanner():
                 else:
                     continue
 
+                phi = -np.pi/2
                 x = positions[i][0]
                 y = positions[i][1]
                 world_coord = kinect_ins.world_coord(x,y)
@@ -349,14 +353,14 @@ class TrajectoryPlanner():
                 # place location
                 phi = next_phi(joints)
                 # world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-                joints_p = IK([des_pos_x, des_pos_y, 27, phi])
-                joints_p_up = IK([des_pos_x, des_pos_y, 77, phi])
+                joints_p = IK([des_pos_x, des_pos_y, 40, phi])
+                joints_p_up = IK([des_pos_x, des_pos_y, 85, phi])
                 joints_p_top = [joints_p_up[0], 0, 0, 0]
 
                 self.add_wp(pre_up)
                 self.add_wp(pre_top)
                 self.execute_plan()
-                self.tp_toggle_gripper(kinect_ins.cubeOrient[i],[des_pos_x, des_pos_y, 27, phi],1)
+                self.tp_toggle_gripper(kinect_ins.cubeOrient[i],[des_pos_x, des_pos_y, 40, phi],1)
 
                 self.add_wp(joints_p_top[:])
                 self.add_wp(joints_p_up[:])
@@ -391,6 +395,9 @@ class TrajectoryPlanner():
         pre_up = [0,0,0,0]
         pre_top = [0,0,0,0]
         des_pos_z = 27
+
+        empty_x = 500
+        empty_y = 340
 
         phi = -np.pi/2
         # step one: put all blocks on board
@@ -429,14 +436,14 @@ class TrajectoryPlanner():
                 # self.rexarm.pause(0.5)
 
                 # x coordinate to place the block
-                des_pos = self.next_loc(kinect_ins, world_coord[0], world_coord[1])
+                # des_pos = self.next_loc(kinect_ins, world_coord[0], world_coord[1])
                 # place location
                 phi = next_phi(joints)
                 # world_coord_p = kinect_ins.world_coord(int(des_pos[0]),int(des_pos[1]))
-                joints_p = IK([int(des_pos[0]), int(des_pos[1]), des_pos_z, phi])
-                joints_p = IK([des_pos_x, des_pos_y, des_pos_z, phi])
-                joints_p_up = IK([des_pos_x, des_pos_y, des_pos_z+50, phi])
+                joints_p = IK([empty_x, empty_y, 30, phi])
+                joints_p_up = IK([empty_x, empty_y, 30+50, phi])
                 joints_p_top = [joints_p_up[0], 0, 0, 0]
+                empty_y += 60
 
                 self.add_wp(pre_up)
                 self.add_wp(pre_top)
@@ -499,7 +506,7 @@ class TrajectoryPlanner():
             # self.rexarm.close_gripper()
             # self.rexarm.pause(0.5)
 
-            if (i <= 5):
+            if (i <= 4):
                 phi = -np.pi/2
             else:
             # place location
@@ -579,4 +586,19 @@ class TrajectoryPlanner():
             elif (kinect_ins.depthOf(x+x_sign*diff/2,y+y_sign*diff/2)<10):
                 return [x+x_sign*diff/2,y+y_sign*diff/2]
             diff += 20
-        return [150, 150] #default value
+        if (self.count%3 == 0): 
+            self.count += 1
+            return [400, 150] #default value
+        elif (self.count%3 == 1): 
+            self.count += 1
+            return [400, 400] #default value
+        elif (self.count%3 == 2):
+            self.count += 1
+            return [100, 400]
+        # elif (self.count%5 == 3)
+        #     self.count += 1
+        #     return [400, 400]
+
+    def PyramidMain(self):
+
+        pass

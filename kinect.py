@@ -358,7 +358,7 @@ class Kinect():
                     # judge if contour is cube # cube length in mouse coord: at least 19
                     len1 = ((box[0][0]-box[1][0])**2+(box[0][1]-box[1][1])**2)**0.5
                     len2 = ((box[0][0]-box[3][0])**2+(box[0][1]-box[3][1])**2)**0.5
-                    if (int(len1) < 21) or (int(len2) < 21):
+                    if (int(len1) < 21) or (int(len2) < 21) or (int(len1) > 40) or (int(len2) > 40):
                         continue
 
                     # record vertexs

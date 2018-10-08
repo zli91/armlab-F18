@@ -395,7 +395,7 @@ class StateMachine():
             input_positions.append(joints[:])
 
             # place the block
-            world_coord_p = [x_off-(world_coord[0] - x_off), y_off - (world_coord[1] - y_off), 40, phi]
+            world_coord_p = [x_off-(world_coord[0] - x_off), world_coord[1], 40, phi]
             joints_p = IK([world_coord_p[0], world_coord_p[1], world_coord_p[2]-15, phi])[:]
             joints_rot = [joints_p[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
@@ -413,12 +413,13 @@ class StateMachine():
         x_off = 304  # distances from center of the bottom of ReArm to world origin
         y_off = 301.5
         phi = -np.pi/2
-        des_pos_x = 200
-        des_pos_y = 200
-        des_pos_z = 25
+        des_pos_x = 170
+        des_pos_y = 170
+        des_pos_z = 23
         positions = self.kinect.blockDetector(174,177)[:]
         input_positions = []
         for i in range(len(positions)):
+            phi = -np.pi/2
             print "camera position detected"
             print positions[i]
             # grab the block
@@ -428,7 +429,7 @@ class StateMachine():
 
             world_coord = self.kinect.world_coord(x,y)
 
-            joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-17, phi])
             
             joints_rot = [joints[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
@@ -436,8 +437,8 @@ class StateMachine():
 
             # place the block
             phi = next_phi(joints)
-            world_coord_p = [des_pos_x, des_pos_y, des_pos_z, phi]
-            joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+            # world_coord_p = [des_pos_x, des_pos_y, des_pos_z, phi]
+            joints_p = IK([des_pos_x, des_pos_y, des_pos_z, phi])
             joints_rot = [joints_p[0], cur_pos[1], cur_pos[2], cur_pos[3]]
             input_positions.append(joints_rot[:])
             input_positions.append(joints_p[:])
@@ -467,7 +468,7 @@ class StateMachine():
                 if (start_x > 550):
                     print "ERROR: start location invalid for line up"
                 destination_x[all_colors[i]]=start_x
-                start_x = start_x+50
+                start_x = start_x+60
             set_up = True
         print "x coord: "
         print destination_x
@@ -651,4 +652,12 @@ class StateMachine():
             elif (self.kinect.depthOf(x+x_sign*diff/2,y+y_sign*diff/2)<10):
                 return [x+x_sign*diff/2,y+y_sign*diff/2]
             diff += 20
-        return [150, 150] #default value
+        if (self.count%3 == 0): 
+            self.count += 1
+            return [300, 200] #default value
+        elif (self.count%3 == 1): 
+            self.count += 1
+            return [400, 400] #default value
+        elif (self.count%3 == 2):
+            self.count += 1
+            return [100, 400]

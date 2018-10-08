@@ -154,7 +154,7 @@ class Rexarm():
             elif th1 <= 2*pi:
                 th1a = th1 - 3*pi/2
                 th5 = th1a - pi/2
-
+            th5 -= pi/2
         # th5 += np.pi/4 
         print 'entered toggle,th1=',th1,'th1a=',th1a,'th5=',th5,'cubeOrient=',cubeOrient            
         
