@@ -287,7 +287,6 @@ class TrajectoryPlanner():
         self.execute_plan()
 
     def lineUpMain(self, kinect_ins, x_coord, des_pos_y):
-        
         all_colors = ["black", "red", "orange", "yellow", "green", "blue", "purple", "pink"]
         destination_x = x_coord
         des_pos_x = 0
@@ -373,3 +372,85 @@ class TrajectoryPlanner():
         self.add_wp(pre_top)
         self.add_wp([0,0,0,0])
         self.execute_plan()
+
+    def StackHighMain(self, des_pos_x, des_pos_y):
+        phi = -np.pi/2
+        des_pos_z = 25
+        positions = []
+        # depth ranges for layer 3, 2, 1
+        # depthRange = [[160,169],[170,173],[174,177]] 
+        # depthRange = [[174,177]] 
+        # positions input into tp
+        input_positions = []
+        
+        # step one: put all blocks on board
+        for j in range(len(depthRange)-1):
+            depthMin = depthRange[j][0]
+            depthMax = depthRange[j][1]
+            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+            for i in range(len(positions)):
+                # block location
+                x = positions[i][0]
+                y = positions[i][1]
+                world_coord = self.kinect.world_coord(x,y)
+                joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
+                input_positions.append(joints[:])
+
+                # x coordinate to place the block
+                des_pos = self.next_loc(world_coord[0], world_coord[1])
+                # place location
+                phi = next_phi(joints)
+                world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+                joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+                input_positions.append(joints_p[:])
+
+            print "stack high input:"
+            print input_positions
+            self.tp.lineUp(input_positions)
+
+        # step two: stack
+        positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+        for i in range(len(positions)):
+            x = positions[i][0]
+            y = positions[i][1]
+            world_coord = self.kinect.world_coord(x,y)
+            joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
+            input_positions.append(joints[:])
+
+            # place location
+            phi = next_phi(joints)
+            world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+            joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+            input_positions.append(joints_p[:])
+            des_pos_z += 40
+        self.tp.lineUp(input_positions)
+
+    # helper function to find a empty place
+    def next_loc(self, x, y):
+        diff = 55
+        x_off = 304  # distances from center of the bottom of ReArm to world origin
+        y_off = 301.5
+        x_sign = 0
+        y_sign = 0
+        # the block is at the right half of the plane
+        if (x-x_off>0):
+            x_sign = -1
+        # block at left half of the plane
+        else:
+            x_sign = 1
+        # the block is at the top half of the plane
+        if (y-y_off>0):
+            x_sign = -1
+        # block at bottom half of the plane
+        else:
+            x_sign = 1
+        # find a close empty position to place the block
+        while (offset<200):
+            if (self.kinect.depthOf(x+x_sign*diff,y)<10):
+                return [x+x_sign*50,y]
+            elif (self.kinect.depthOf(x,y+y_sign*diff)<10):
+                return [x,y+y_sign*diff]
+            elif (self.kinect.depthOf(x+x_sign*diff/2,y+y_sign*diff/2)<10):
+                return [x+x_sign*diff/2,y+y_sign*diff/2]
+            diff += 20
+        return [150, 150] #default value

@@ -552,56 +552,57 @@ class StateMachine():
         des_pos_y = self.kinect.last_click[1]
         self.kinect.new_click = False;
 
-        phi = -np.pi/2
-        des_pos_z = 20
-        positions = []
-        # depth ranges for layer 3, 2, 1
-        # depthRange = [[160,169],[170,173],[174,177]] 
-        # depthRange = [[174,177]] 
-        # positions input into tp
-        input_positions = []
+        self.tp.StackHighMain()
+        # phi = -np.pi/2
+        # des_pos_z = 20
+        # positions = []
+        # # depth ranges for layer 3, 2, 1
+        # # depthRange = [[160,169],[170,173],[174,177]] 
+        # # depthRange = [[174,177]] 
+        # # positions input into tp
+        # input_positions = []
         
-        # step one: put all blocks on board
-        for j in range(len(depthRange)-1):
-            depthMin = depthRange[j][0]
-            depthMax = depthRange[j][1]
-            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
-            for i in range(len(positions)):
-                # block location
-                x = positions[i][0]
-                y = positions[i][1]
-                world_coord = self.kinect.world_coord(x,y)
-                joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
-                input_positions.append(joints[:])
+        # # step one: put all blocks on board
+        # for j in range(len(depthRange)-1):
+        #     depthMin = depthRange[j][0]
+        #     depthMax = depthRange[j][1]
+        #     positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+        #     for i in range(len(positions)):
+        #         # block location
+        #         x = positions[i][0]
+        #         y = positions[i][1]
+        #         world_coord = self.kinect.world_coord(x,y)
+        #         joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
+        #         input_positions.append(joints[:])
 
-                # x coordinate to place the block
-                des_pos = next_loc(world_coord[0], world_coord[1])
-                # place location
-                phi = next_phi(joints)
-                world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-                joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
-                input_positions.append(joints_p[:])
+        #         # x coordinate to place the block
+        #         des_pos = next_loc(world_coord[0], world_coord[1])
+        #         # place location
+        #         phi = next_phi(joints)
+        #         world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+        #         joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+        #         input_positions.append(joints_p[:])
 
-            print "stack high input:"
-            print input_positions
-            self.tp.lineUp(input_positions)
+        #     print "stack high input:"
+        #     print input_positions
+        #     self.tp.lineUp(input_positions)
 
-        # step two: stack
-        positions = self.kinect.blockDetector(depthMin,depthMax)[:]
-        for i in range(len(positions)):
-            x = positions[i][0]
-            y = positions[i][1]
-            world_coord = self.kinect.world_coord(x,y)
-            joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
-            input_positions.append(joints[:])
+        # # step two: stack
+        # positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+        # for i in range(len(positions)):
+        #     x = positions[i][0]
+        #     y = positions[i][1]
+        #     world_coord = self.kinect.world_coord(x,y)
+        #     joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
+        #     input_positions.append(joints[:])
 
-            # place location
-            phi = next_phi(joints)
-            world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-            joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
-            input_positions.append(joints_p[:])
-            des_pos_z += 40
-        self.tp.lineUp(input_positions)
+        #     # place location
+        #     phi = next_phi(joints)
+        #     world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
+        #     joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
+        #     input_positions.append(joints_p[:])
+        #     des_pos_z += 40
+        # self.tp.lineUp(input_positions)
 
     def buildPyramid(self):
         self.current_state = "buildPyramid"
