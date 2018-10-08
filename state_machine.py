@@ -553,56 +553,7 @@ class StateMachine():
         self.kinect.new_click = False;
 
         self.tp.StackHighMain(self.kinect, des_pos_x, des_pos_y)
-        # phi = -np.pi/2
-        # des_pos_z = 20
-        # positions = []
-        # # depth ranges for layer 3, 2, 1
-        # # depthRange = [[160,169],[170,173],[174,177]] 
-        # # depthRange = [[174,177]] 
-        # # positions input into tp
-        # input_positions = []
-        
-        # # step one: put all blocks on board
-        # for j in range(len(depthRange)-1):
-        #     depthMin = depthRange[j][0]
-        #     depthMax = depthRange[j][1]
-        #     positions = self.kinect.blockDetector(depthMin,depthMax)[:]
-        #     for i in range(len(positions)):
-        #         # block location
-        #         x = positions[i][0]
-        #         y = positions[i][1]
-        #         world_coord = self.kinect.world_coord(x,y)
-        #         joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
-        #         input_positions.append(joints[:])
 
-        #         # x coordinate to place the block
-        #         des_pos = next_loc(world_coord[0], world_coord[1])
-        #         # place location
-        #         phi = next_phi(joints)
-        #         world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-        #         joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
-        #         input_positions.append(joints_p[:])
-
-        #     print "stack high input:"
-        #     print input_positions
-        #     self.tp.lineUp(input_positions)
-
-        # # step two: stack
-        # positions = self.kinect.blockDetector(depthMin,depthMax)[:]
-        # for i in range(len(positions)):
-        #     x = positions[i][0]
-        #     y = positions[i][1]
-        #     world_coord = self.kinect.world_coord(x,y)
-        #     joints = IK([world_coord[0], world_coord[1], world_coord[2]-15, phi])
-        #     input_positions.append(joints[:])
-
-        #     # place location
-        #     phi = next_phi(joints)
-        #     world_coord_p = self.kinect.world_coord(des_pos_x,des_pos_y)
-        #     joints_p = IK([world_coord_p[0], world_coord_p[1], des_pos_z, phi])
-        #     input_positions.append(joints_p[:])
-        #     des_pos_z += 40
-        # self.tp.lineUp(input_positions)
 
     def buildPyramid(self):
         self.current_state = "buildPyramid"
@@ -610,15 +561,44 @@ class StateMachine():
         self.status_message = "State: Pyramid Builder"
         self.rexarm.pause(2)
         """
-        TODO: get the starting location for pyramid
+        get the starting location for pyramid
         """
-        start_x = 0
-        start_y = 0
+        self.kinect.new_click = False;
+        all_colors = ["black", "red", "orange", "yellow", "green", "blue", "purple", "pink"]
+
+        # wait for mouse click
+        while (self.kinect.new_click==False): 
+            self.status_message = "State: Build Pyramid - waiting for mouse click for starting location"
+        phi = -np.pi/2
+        
         """
         for pyramid coordinates, current solution: hard coding in calculated results for pyramid
         pos should be a list of list of x, y, and z coordinates in forms of [[x, y, z], [x, y, z], ...]
         """
-        pos = []
+        destination_x = []
+        set_up = False
+        # wait for mouse click
+        while (set_up==False):
+            while (self.kinect.new_click==False): 
+                continue;
+            [start_x, des_pos_y, des_pos_z] = self.kinect.world_coord(self.kinect.last_click[0], self.kinect.last_click[1])
+            self.kinect.new_click = False;
+            destination_x.clear()
+            # Black Red Orange Yellow Green Blue Violet Pink
+            for i in range(8):
+                if (start_x > 550):
+                    print "ERROR: start location invalid for line up"
+                destination_x.append(start_x)
+                start_x = start_x+50
+            set_up = True
+        print "x coord: "
+        print destination_x
+
+        self.kinect.new_click = False;
+        self.rexarm.pause(0.5)
+
+        self.tp.lineUpMain(self.kinect, destination_x, des_pos_y)
+
         # click on the build Pyramid button twice to stop building pyramid
         """
         depthMin and depthMax are two constants
@@ -626,7 +606,7 @@ class StateMachine():
         count = 0 # counts which position in pos list to use 
         while (self.next_state != "buildPyramid"):
             time.sleep(0.03)
-            positions = self.kinect.blockDetector(depthMin,depthMax)[:]
+            positions = self.kinect.blockDetector(174,177)[:]
             if (positions.size()!=0):
                 for i in range(len(positions)):
                     x = positions[i][0]

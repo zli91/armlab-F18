@@ -273,13 +273,13 @@ class Kinect():
         #     ([130, 95, 80], [158, 99, 85]) # blue
         #     ]
         hsvBoundaries = [ # h,s,v
-            ([0, 0, 30], [255, 255, 85]), # black
-            ([161, 100, 110], [200, 220, 200]), # red
+            ([0, 0, 30], [255, 255, 120]), # black
+            ([161, 100, 135], [200, 240, 200]), # red
             ([0, 140, 200], [15, 240, 255]), # orange
-            ([10, 100, 200], [45, 220, 255]), # yellow
-            ([50, 80, 90],[80, 150, 170]), # green
-            ([85, 120, 110], [130, 200, 230]), # blue
-            ([131, 60, 90], [160, 140, 160]), # purple
+            ([0, 0, 200], [45, 150, 255]), # yellow
+            ([40, 80, 135],[80, 150, 170]), # green
+            ([85, 100, 135], [130, 200, 230]), # blue
+            ([131, 60, 122], [160, 140, 180]), # purple
             ([150, 130, 210], [180, 190, 255]), # pink
             ]
 
@@ -349,13 +349,7 @@ class Kinect():
                 vAve = vSum/len(colorDetectionPoints)
 
                 if hAve >= lower[0] and hAve <= upper[0] and sAve >= lower[1] and sAve <= upper[1] and vAve >= lower[2] and vAve <= upper[2]:
-                    # define colors
-                    self.detectedCubeColor.append(cubeColor[j])
-                    # record contours
-                    self.cubeContours.append(self.contoursByDepth[i])
-                    # record center coords
-                    self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
-                    camera_coord.append([centerX,centerY])
+                    
                     # approximate bounding rectangle
                     rect = cv2.minAreaRect(self.contoursByDepth[i])
                     box = cv2.boxPoints(rect)
@@ -364,8 +358,8 @@ class Kinect():
                     # judge if contour is cube # cube length in mouse coord: at least 19
                     len1 = ((box[0][0]-box[1][0])**2+(box[0][1]-box[1][1])**2)**0.5
                     len2 = ((box[0][0]-box[3][0])**2+(box[0][1]-box[3][1])**2)**0.5
-                    # if (int(len1) < 21) or (int(len2) < 21):
-                    #     continue
+                    if (int(len1) < 21) or (int(len2) < 21):
+                        continue
 
                     # record vertexs
                     self.rectVertex.append(box)
@@ -376,7 +370,13 @@ class Kinect():
                     # record orientation in world frame
                     angle = np.arctan((vertexCoord2[1]-vertexCoord1[1])/(vertexCoord2[0]-vertexCoord1[0]))
                     self.cubeOrient.append(angle)
-
+                    # define colors
+                    self.detectedCubeColor.append(cubeColor[j])
+                    # record contours
+                    self.cubeContours.append(self.contoursByDepth[i])
+                    # record center coords
+                    self.cubeCenter.append([int(centerCoordInWorld[0]),int(centerCoordInWorld[1])])
+                    camera_coord.append([centerX,centerY])
                 else:
                     continue
 
