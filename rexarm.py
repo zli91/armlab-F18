@@ -118,6 +118,7 @@ class Rexarm():
                     th5 = th1a - cubeOrient
             else:
                 th5 = 0.0
+
         else:
                 if th1 <=pi/2:
                     th1a = (pi/2)-th1
@@ -131,8 +132,9 @@ class Rexarm():
                 elif th1 <= 2*pi:
                     th1a = th1 - 3*pi/2
                     th5 = th1a - pi/2
-
+        th5 -= np.pi/4             
         pos = self.get_positions()[:]
+        self.t_gripper = th5;
         pos[4] = th5
         self.set_positions(pos)
         self.pause(0.5)

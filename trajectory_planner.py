@@ -328,7 +328,7 @@ class TrajectoryPlanner():
                 self.add_wp(pre_top)
                 self.execute_plan()
                 self.tp_toggle_gripper(kinect_ins.cubeOrient[i], [world_coord[0], world_coord[1], world_coord[2]+40, phi],0)
-
+                print 'tp_world coord',world_coord
                 self.add_wp(joints_top)
                 self.add_wp(joints_up[:])
                 # self.execute_plan()
@@ -357,7 +357,7 @@ class TrajectoryPlanner():
                 self.add_wp(joints_p_top[:])
                 self.add_wp(joints_p_up[:])
                 # self.execute_plan()
-                self.execute_plan()
+                # self.execute_plan()
                 # self.rexarm.toggle_gripper(np.pi/2)
 
 
