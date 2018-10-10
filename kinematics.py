@@ -49,9 +49,9 @@ def FK_dh(joint_angles, link):
          ]+offset_mat
         
     T4 = [
-         [ - 1.0*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)), sin(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*cos(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)),      sin(th1), 99.0*cos(th1)*cos(th2) - 143.6*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 143.6*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
-         [ - 1.0*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), sin(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*cos(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 143.6*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 143.6*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
-         [                                               sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                     cos(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) - 1.0*sin(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),             0,                                                        99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 143.6*sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + 143.6*cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + 118.0],
+         [ - 1.0*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)), sin(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 1.0*cos(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)),      sin(th1), 99.0*cos(th1)*cos(th2) - 110*cos(th4)*(cos(th1)*sin(th2)*sin(th3) - 1.0*cos(th1)*cos(th2)*cos(th3)) - 110*sin(th4)*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2)) - 99.0*cos(th1)*sin(th2)*sin(th3) + 99.0*cos(th1)*cos(th2)*cos(th3)],
+         [ - 1.0*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), sin(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 1.0*cos(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)), -1.0*cos(th1), 99.0*cos(th2)*sin(th1) - 110*cos(th4)*(sin(th1)*sin(th2)*sin(th3) - 1.0*cos(th2)*cos(th3)*sin(th1)) - 110*sin(th4)*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2)) - 99.0*sin(th1)*sin(th2)*sin(th3) + 99.0*cos(th2)*cos(th3)*sin(th1)],
+         [                                               sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                     cos(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) - 1.0*sin(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),             0,                                                        99.0*sin(th2) + 99.0*cos(th2)*sin(th3) + 99.0*cos(th3)*sin(th2) + 110*sin(th4)*(cos(th2)*cos(th3) - 1.0*sin(th2)*sin(th3)) + 110*cos(th4)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + 118.0],
          [                                                                                                                                                     0,                                                                                                                                               0,             0,                                                                                                                                                                                                                                                  1.0]
          ]+offset_mat
     FK4 = np.round([T1,T2,T3,T4],6)
@@ -269,7 +269,7 @@ def get_euler_angles_from_T(T):
     #print 'a13-a31',a13,a23,a33,a32,a31
     theta = round(atan2((1-a33**2)**0.5,a33),3)
     psi = round(atan2(a13,-a23),3)
-    delta = round(atan2(a31,a32),3)
+    delta = round(pi - atan2(a31,a32),3)
     euler = [psi,theta,delta]
     #print 'euler angle Z(psi)X(theta)Z(delta):',euler
     return euler
@@ -303,6 +303,7 @@ def to_s_matrix(w,v):
 
 #test code
 # get_euler_angles_from_T(FK_dh(IK([304,292+100,100,-pi/2]),4))
-# get_pose_from_T(FK_dh(IK([0,100,100,-pi/3]),4))
+print get_pose_from_T(FK_dh([pi/2,pi/4,0,0],4))
 # print IK([x_off+200,y_off-200,118,-pi/4]);
+
 
