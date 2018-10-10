@@ -188,12 +188,13 @@ class StateMachine():
         self.status_message = "State: Execute "
         self.current_state = "execute"
         self.next_state = "idle"      
-        self.tp.wp = [[0.0, 0.0, 0.0, 0.0],
-                       [1.0, 0.8, 1.0, 1.0], # test: 1.2, 1.0, 0.9, 0.7
-                       [-1.0, -0.8, -1.0, -1.0],
-                       [-1.0, 0.8, 1.0, 1.0],
-                       [1.0, -0.8,-1.0,-1.0],
-                       [0.0, 0.0, 0.0, 0.0]]
+        self.tp.wp = [[0.0, 0.0, 0.0, 0.0,0,0],
+                        [1.2, 1.0, 0.9, 0.7,0,0]]
+                       # [1.0, 0.8, 1.0, 1.0], # test: 1.2, 1.0, 0.9, 0.7
+                       # [-1.0, -0.8, -1.0, -1.0],
+                       # [-1.0, 0.8, 1.0, 1.0],
+                       # [1.0, -0.8,-1.0,-1.0],
+                       # [0.0, 0.0, 0.0, 0.0]]
         self.tp.execute_without_path_smoothing()
     
     # teachNRepeat state does not end until button click

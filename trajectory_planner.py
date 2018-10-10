@@ -187,6 +187,7 @@ class TrajectoryPlanner():
         # with open("execute_without_path_smoothing.csv", 'wb') as resultFile:
         #     writeResult = csv.writer(resultFile, delimiter=',')
         for i in range(len(self.wp)-1):
+            self.rexarm.set_speeds([0.21,0.21,0.21,0.21,0,0])
             self.rexarm.set_positions(self.wp[i+1])
                 # while (time.time() - time_begin < 2):
                 #     if (time.time() - interval_begin >= 0.05):
