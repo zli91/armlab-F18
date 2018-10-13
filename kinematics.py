@@ -55,10 +55,6 @@ def FK_dh(joint_angles, link):
          [                                                                                                                                                     0,                                                                                                                                               0,             0,                                                                                                                                                                                                                                                  1.0]
          ]+offset_mat
     FK4 = np.round([T1,T2,T3,T4],6)
-    #FK4 = format([T1,T2,T3,T4], '.2f')
-    #FK4 = ([T1,T2,T3,T4])
-    #print 'FK_DH result:\n',(np.matrix(FK4[link-1]))
-    #print  (np.matrix(FK4[link-1])) 
     return np.matrix(FK4[link-1])
 
     """
@@ -138,45 +134,28 @@ def FK_pox(joint_angles):
     return [world_pos[0], world_pos[1], world_pos[2], phi];
 
 def IK(pose):
+    # ik parameters
     d1 = 118
     a2 = 99
     a3 = 99
     a4 = 143.6
+    #world coordinate and phi
     Xw,pose=np.split(pose,[1])
     Yw,pose=np.split(pose,[1])
-    Ze,phi=np.split(pose,[1])    # if phi>0:
-    #     print 'error: phi must be negative according to convention'
-    #     return 0
+    Ze,phi=np.split(pose,[1])    
 
+    
     Ye = -(float(Xw)-x_off)
     Xe = float(Yw)-y_off
     Re = (Xe**2 + Ye**2)**0.5
     Ze = float(Ze) - d1
     phi = float(phi)
-
+    #calculating th1
     th1 = atan2(Ye,Xe)                                                      #theta 1 
 
     if ((Re**2+Ze**2)**0.5)>341.6:
         print 'Position too far'
         return [0,0,0,0]
-    # if (Re <= 220):
-    #     if th1 <=pi/2:
-    #         th1a = (pi/2)-th1
-    #         th5 = cubeOrient - th1a 
-    #     elif th1 <= pi:
-    #         th1a = th1 - pi/2
-    #         th5 = th1a - cubeOrient
-    #     elif th1 <= 3*pi/2:
-    #         th1a = (3*pi/2)-th1
-    #         th5 = cubeOrient - th1a    
-    #     elif th1 <= 2*pi:
-    #         th1a = th1 - 3*pi/2
-    #         th5 = th1a - cubeOrient
-    # else:
-    #     th5 = 0
-
-
-
 
     #parameters:
     
@@ -184,6 +163,8 @@ def IK(pose):
     dR = Re - a4*cos(-phi)
     dR = Re - a4*cos(phi)
     dZ = Ze + a4*sin(-phi)
+    #incrementing phi to reach possible pose
+    #calculating th3
     while True:
         try:
             if phi <= 0: 
@@ -201,7 +182,7 @@ def IK(pose):
             dR = Re - a4*cos(phi)
             dZ = Ze + a4*sin(-phi)
             
-
+    # return if location not valid
     print 'Re:',Re
     if (Re>341.6 or Ze>118+341.6):
         print 'error: location out of range'
@@ -210,25 +191,12 @@ def IK(pose):
         print 'error: euler angle too stiff'
         return[0,0,0,0]
 
-    
+    #calculating th2,4
     beta = atan2(dZ,dR)
-    #print 'beta:',beta
-    
-    # print 'dZ',dZ
-    # print 'dR:',dR
-    # print 'th3_cos:' ,(dZ**2+dR**2-a2**2-a3**2)/(2*a2*a3)
-    # print 'dRdZ:' ,(dZ**2+dR**2)**0.5
-    
-    
-    alpha = atan2(a3*sin(-th3),a2+a3*cos(-th3))
-    #print 'alpha:',alpha
-    th2 = beta+alpha                                                      #theta 2
-    
+    psi = atan2(a3*sin(-th3),a2+a3*cos(-th3))
+    th2 = beta+psi                                                      #theta 2
     th4 = phi - th2 - th3                                                  #theta 4
-    # print 'th1:',th1
-    # print 'th4:',th4grayThreshold
-    # print 'th2:',th2
-    # print 'th3:',th3
+
     
     #print 'IK result:',[th1,th2,th3,th4]
     Xs = [0,a2*cos(th2),a2*cos(th2)+a3*cos(th2+th3),a2*cos(th2)+a3*cos(th2+th3)+a4*cos(phi)]
