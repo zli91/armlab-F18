@@ -587,18 +587,7 @@ class TrajectoryPlanner():
             elif (kinect_ins.depthOf(x+x_sign*diff/2,y+y_sign*diff/2)<10):
                 return [x+x_sign*diff/2,y+y_sign*diff/2]
             diff += 20
-        if (self.count%3 == 0): 
-            self.count += 1
-            return [400, 150] #default value
-        elif (self.count%3 == 1): 
-            self.count += 1
-            return [400, 400] #default value
-        elif (self.count%3 == 2):
-            self.count += 1
-            return [100, 400]
-        # elif (self.count%5 == 3)
-        #     self.count += 1
-        #     return [400, 400]
+        return [400, 150] #default value
 
     def PyramidMain(self):
 
